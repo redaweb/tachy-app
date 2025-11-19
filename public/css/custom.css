@@ -1,0 +1,26 @@
+:root {
+    --primary: #283593;
+    --secondary: #2dc4ea;
+    --warning: #fdcf41;
+}
+
+.bg-primary-custom {
+    background-color: var(--primary) !important;
+}
+.text-primary-custom {
+    color: var(--primary) !important;
+}
+
+.bg-secondary-custom {
+    background-color: var(--secondary) !important;
+}
+.text-secondary-custom {
+    color: var(--secondary) !important;
+}
+
+.bg-warning-custom {
+    background-color: var(--warning) !important;
+}
+.text-warning-custom {
+    color: var(--warning) !important;
+}

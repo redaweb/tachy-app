@@ -7,6 +7,8 @@
     <a href="{{ route('conducteurs.create') }}" class="btn btn-primary">
         <i class="fas fa-plus me-1"></i>Nouveau Conducteur
     </a>
+
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 @endsection
 
 @section('content')
@@ -47,20 +49,20 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ route('conducteurs.show', $conducteur->matricule) }}" 
+                                    <a href="{{ route('conducteurs.show', $conducteur->matricule) }}"
                                        class="btn btn-info" title="Voir détails">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('conducteurs.edit', $conducteur->matricule) }}" 
+                                    <a href="{{ route('conducteurs.edit', $conducteur->matricule) }}"
                                        class="btn btn-warning" title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('conducteurs.destroy', $conducteur->matricule) }}" 
+                                    <form action="{{ route('conducteurs.destroy', $conducteur->matricule) }}"
                                           method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger" 
-                                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce conducteur ?')" 
+                                        <button type="submit" class="btn btn-danger"
+                                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce conducteur ?')"
                                                 title="Supprimer">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -72,11 +74,11 @@
                     </tbody>
                 </table>
             </div>
-            
+
             {{-- Pagination --}}
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="text-muted">
-                    Affichage de {{ $conducteurs->firstItem() }} à {{ $conducteurs->lastItem() }} 
+                    Affichage de {{ $conducteurs->firstItem() }} à {{ $conducteurs->lastItem() }}
                     sur {{ $conducteurs->total() }} conducteurs
                 </div>
                 <div>

@@ -11,9 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('journals', function (Blueprint $table) {
+        Schema::create('journal', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->string('matricule', 50)->nullable();
+            $table->string('nom')->nullable();
+            $table->date('ladate')->nullable();
+            $table->time('heure')->nullable();
+            $table->string('action')->nullable();
+            $table->text('detail')->nullable();
+            $table->string('site', 10)->nullable();
+            
+            // Index pour améliorer les performances
+            $table->index('matricule');
+            $table->index('ladate');
+            $table->index('site');
         });
     }
 
@@ -22,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('journals');
+        Schema::dropIfExists('journal');
     }
 };

@@ -11,9 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('freinages', function (Blueprint $table) {
+        Schema::create('freinage', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->string('type')->nullable();
+            $table->decimal('vitesse', 8, 2)->nullable();
+            $table->string('interstation')->nullable();
+            $table->text('details')->nullable();
+            $table->time('heure')->nullable();
+            $table->unsignedBigInteger('idcourse')->nullable();
+            
+            // Clé étrangère vers la table courses
+            $table->foreign('idcourse')->references('idcourse')->on('courses')->onDelete('cascade');
+            
+            // Index pour améliorer les performances
+            $table->index('idcourse');
         });
     }
 
@@ -22,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('freinages');
+        Schema::dropIfExists('freinage');
     }
 };

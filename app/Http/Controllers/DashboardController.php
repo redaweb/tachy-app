@@ -5,8 +5,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Conducteur;
 use App\Models\Course;
+use App\Models\CourseCsv;
 use App\Models\Enveloppe;
 use App\Models\Exces;
+use App\Models\Freinage;
+use App\Models\Journal;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -18,6 +22,10 @@ class DashboardController extends Controller
             'courses' => Course::count(),
             'enveloppes' => Enveloppe::count(),
             'exces' => Exces::count(),
+            'freinages' => Freinage::count(),
+            'journal' => Journal::count(),
+            'courseCsv' => CourseCsv::count(),
+            'users' => User::count(),
         ];
 
         $recentCourses = Course::with('conducteur')
@@ -30,6 +38,16 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        return view('dashboard', compact('stats', 'recentCourses', 'recentExces'));
+        $recentFreinages = Freinage::with('course.conducteur')
+            ->orderBy('id', 'desc')
+            ->limit(5)
+            ->get();
+
+        $recentJournal = Journal::orderBy('ladate', 'desc')
+            ->orderBy('heure', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('dashboard', compact('stats', 'recentCourses', 'recentExces', 'recentFreinages', 'recentJournal'));
     }
 }

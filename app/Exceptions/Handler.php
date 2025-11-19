@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use Illuminate\Http\Exceptions\PostTooLargeException;
 
 class Handler extends ExceptionHandler
 {
@@ -25,6 +26,22 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+        // Handle oversized POST/upload (file too large)
+        $this->renderable(function (PostTooLargeException $e, $request) {
+            $maxUpload = ini_get('upload_max_filesize');
+            $message = 'Fichier trop volumineux. Taille maximale autorisée : ' . $maxUpload;
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message
+                ], 413);
+            }
+
+            // Redirect back for standard form submissions, remove file inputs from old input
+            return redirect()->back()->withInput($request->except(array_keys($request->files->all())))->with('error', $message);
         });
     }
 }

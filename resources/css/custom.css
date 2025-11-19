@@ -1,0 +1,12 @@
+:root {
+    --primary: #283593;
+    --secondary: #2dc4ea;
+    --warning: #fdcf41;
+}
+
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+.text-primary {
+    color: var(--primary) !important;
+}
