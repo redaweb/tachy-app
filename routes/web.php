@@ -40,6 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/courses/nbcontroles', [CourseController::class, 'nbControles'])->name('courses.nbcontroles');
     Route::get('/courses/calendar/{year}/{month}', [CourseController::class, 'calendar'])->name('courses.calendar');
     Route::get('/courses/bydate/{ladate}', [CourseController::class, 'bydate'])->name('courses.bydate');
+    route::get('/courses/depouillement/{idcourse}', [CourseController::class, 'depouillement'])->name('courses.depouillement');
     Route::post('/courses/upload', [CourseController::class, 'upload'])->name('courses.upload');
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

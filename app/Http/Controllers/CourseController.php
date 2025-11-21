@@ -625,10 +625,11 @@ class CourseController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Construire les données d'analyse partagées pour show/depouillement
      */
-    public function show( Course $course)
+    private function buildCourseViewData(Course $course)
     {
+        $lannee = Carbon::parse($course->ladate)->format('Y');
         $site = Session::get('site', $course->site ?? 'ALG');
 
         // Charger les enveloppes pour le site
@@ -660,7 +661,6 @@ class CourseController extends Controller
         // Charger les données CSV selon la source
         if ($source == "fichier" && file_exists($lenregistrement)) {
             // Charger depuis fichier CSV
-            // Gérer le cas ALG vs ALGER
             $csvSiteKey = $site === 'ALG' ? 'ALGER' : $site;
             $csvConfig = config('csv.' . $csvSiteKey, config('csv.ALGER'));
 
@@ -670,11 +670,11 @@ class CourseController extends Controller
                 $ln = 1;
                 while (($data = fgetcsv($handle, 1024, ";")) !== FALSE) {
                     if ($ln >= $getdebut && $ln <= $getfin) {
-                        if ($lnpointcourse == 0 || $pointcourses[$lnpointcourse - 1]['km'] != $data[$csvConfig['km']]) {
+                        if ($lnpointcourse == 0 || ($pointcourses[$lnpointcourse - 1]['km'] ?? null) != ($data[$csvConfig['km']] ?? null)) {
                             $pointcourses[$lnpointcourse] = [
                                 'km' => $data[$csvConfig['km']] ?? 0,
                                 'temps' => $data[$csvConfig['temps']] ?? '',
-                                'vitesse' => (float)$data[$csvConfig['vitesse']] ?? 0,
+                                'vitesse' => (float)($data[$csvConfig['vitesse']] ?? 0),
                                 'dsstop' => $data[$csvConfig['dsstop']] ?? 0,
                                 'FU' => $data[$csvConfig['FU']] ?? 0,
                                 'M1' => $data[$csvConfig['M1']] ?? 0,
@@ -687,31 +687,31 @@ class CourseController extends Controller
                             ];
                             $lnpointcourse++;
 
-                            if ($lnpointcourse == 2 && $pointcourses[$lnpointcourse - 1]['vitesse'] < 2) {
+                            if ($lnpointcourse == 2 && ($pointcourses[$lnpointcourse - 1]['vitesse'] ?? 0) < 2) {
                                 $pointcourses[0] = $pointcourses[1];
                                 $lnpointcourse = 1;
                             }
                         } else {
-                            if ($pointcourses[$lnpointcourse - 1]['dsstop'] == 1) $nbdsstop++;
+                            if (($pointcourses[$lnpointcourse - 1]['dsstop'] ?? 0) == 1) $nbdsstop++;
 
-                            if ($pointcourses[$lnpointcourse - 1]['vitesse'] < 4 && ($data[$csvConfig['vitesse']] ?? 0) < 4) {
-                                $pointcourses[$lnpointcourse - 1]['vitesse'] = min($pointcourses[$lnpointcourse - 1]['vitesse'], $data[$csvConfig['vitesse']] ?? 0);
+                            if (($pointcourses[$lnpointcourse - 1]['vitesse'] ?? 0) < 4 && ($data[$csvConfig['vitesse']] ?? 0) < 4) {
+                                $pointcourses[$lnpointcourse - 1]['vitesse'] = min(($pointcourses[$lnpointcourse - 1]['vitesse'] ?? 0), ($data[$csvConfig['vitesse']] ?? 0));
                             } else {
-                                $pointcourses[$lnpointcourse - 1]['vitesse'] = max($pointcourses[$lnpointcourse - 1]['vitesse'], $data[$csvConfig['vitesse']] ?? 0);
+                                $pointcourses[$lnpointcourse - 1]['vitesse'] = max(($pointcourses[$lnpointcourse - 1]['vitesse'] ?? 0), ($data[$csvConfig['vitesse']] ?? 0));
                             }
 
-                            if ($pointcourses[$lnpointcourse - 1]['dsstop'] == 1) $pointcourses[$lnpointcourse - 1]['vitesse'] = 0;
+                            if (($pointcourses[$lnpointcourse - 1]['dsstop'] ?? 0) == 1) $pointcourses[$lnpointcourse - 1]['vitesse'] = 0;
 
-                            $pointcourses[$lnpointcourse - 1]['dsstop'] = max($pointcourses[$lnpointcourse - 1]['dsstop'], $data[$csvConfig['dsstop']] ?? 0);
-                            $pointcourses[$lnpointcourse - 1]['M1'] = max($pointcourses[$lnpointcourse - 1]['M1'], $data[$csvConfig['M1']] ?? 0);
-                            $pointcourses[$lnpointcourse - 1]['M2'] = max($pointcourses[$lnpointcourse - 1]['M2'], $data[$csvConfig['M2']] ?? 0);
-                            $pointcourses[$lnpointcourse - 1]['FU'] = max($pointcourses[$lnpointcourse - 1]['FU'], $data[$csvConfig['FU']] ?? 0);
-                            $pointcourses[$lnpointcourse - 1]['gong'] = max($pointcourses[$lnpointcourse - 1]['gong'], $data[$csvConfig['gong']] ?? 0);
-                            $pointcourses[$lnpointcourse - 1]['freinage'] = max($pointcourses[$lnpointcourse - 1]['freinage'], $data[$csvConfig['freinage']] ?? 0);
-                            $pointcourses[$lnpointcourse - 1]['traction'] = max($pointcourses[$lnpointcourse - 1]['traction'], $data[$csvConfig['traction']] ?? 0);
+                            $pointcourses[$lnpointcourse - 1]['dsstop'] = max(($pointcourses[$lnpointcourse - 1]['dsstop'] ?? 0), ($data[$csvConfig['dsstop']] ?? 0));
+                            $pointcourses[$lnpointcourse - 1]['M1'] = max(($pointcourses[$lnpointcourse - 1]['M1'] ?? 0), ($data[$csvConfig['M1']] ?? 0));
+                            $pointcourses[$lnpointcourse - 1]['M2'] = max(($pointcourses[$lnpointcourse - 1]['M2'] ?? 0), ($data[$csvConfig['M2']] ?? 0));
+                            $pointcourses[$lnpointcourse - 1]['FU'] = max(($pointcourses[$lnpointcourse - 1]['FU'] ?? 0), ($data[$csvConfig['FU']] ?? 0));
+                            $pointcourses[$lnpointcourse - 1]['gong'] = max(($pointcourses[$lnpointcourse - 1]['gong'] ?? 0), ($data[$csvConfig['gong']] ?? 0));
+                            $pointcourses[$lnpointcourse - 1]['freinage'] = max(($pointcourses[$lnpointcourse - 1]['freinage'] ?? 0), ($data[$csvConfig['freinage']] ?? 0));
+                            $pointcourses[$lnpointcourse - 1]['traction'] = max(($pointcourses[$lnpointcourse - 1]['traction'] ?? 0), ($data[$csvConfig['traction']] ?? 0));
                         }
 
-                        if ($lnpointcourse > 0 && ($pointcourses[$lnpointcourse - 1]['vitesse'] ?? '') == "") {
+                        if ($lnpointcourse > 0 && (($pointcourses[$lnpointcourse - 1]['vitesse'] ?? '') === "")) {
                             $pointcourses[$lnpointcourse - 1]['vitesse'] = 0;
                         }
                     }
@@ -776,7 +776,6 @@ class CourseController extends Controller
         }
 
         // Appliquer reEnv() sur l'enveloppe sélectionnée
-        //dd($env[$quelenv]->matrice);
         $nouveauEnv = [];
         if (isset($env[$quelenv])) {
             $nouveauEnv = reEnv($env[$quelenv]->matrice, $pointcourses);
@@ -785,13 +784,12 @@ class CourseController extends Controller
         // Calcul des excès
         $nbexait = -1;
         $exait = [];
-        //dd($pointcourses[11424],$nouveauEnv);
         for ($i = 0; $i < count($pointcourses); $i++) {
             $j = 0;
             $pointcourses[$i]['difference'] = 0;
 
             // Trouver vitesse limite
-            while ($j < count($nouveauEnv) && $nouveauEnv[$j]["x"] <= $i) {
+            while ($j < count($nouveauEnv) && ($nouveauEnv[$j]["x"] ?? PHP_INT_MAX) <= $i) {
                 $j++;
             }
 
@@ -800,7 +798,7 @@ class CourseController extends Controller
             }
 
             $pointcourses[$i]['limite'] = $nouveauEnv[$j - 1]["y"] ?? 0; // limite
-            $pointcourses[$i]['difference'] =(float) ($pointcourses[$i]['vitesse'] ?? 0) -(float) ($pointcourses[$i]['limite'] ?? 0);
+            $pointcourses[$i]['difference'] = (float) ($pointcourses[$i]['vitesse'] ?? 0) - (float) ($pointcourses[$i]['limite'] ?? 0);
 
             if ($pointcourses[$i]['difference'] < 1) {
                 $pointcourses[$i]['couleur'] = "#2a3b90";
@@ -811,9 +809,6 @@ class CourseController extends Controller
             }
 
             if ($pointcourses[$i]['difference'] > 0) {
-                $dep = $pointcourses[$i]['vitesse'] - $pointcourses[$i]['limite'];
-                $limite = $pointcourses[$i]['limite'];
-
                 // Les excès
                 if ($i == 0 || ($pointcourses[$i - 1]['difference'] ?? 0) < 1) {
                     if ($nbexait == -1 || ($exait[$nbexait]["aire"] ?? 0) > 9) {
@@ -823,7 +818,7 @@ class CourseController extends Controller
                     $exait[$nbexait]["debut"] = $i;
                     $exait[$nbexait]["fin"] = $i;
                 } elseif (($pointcourses[$i - 1]['difference'] ?? 0) > 2 && $pointcourses[$i]['difference'] > 2) {
-                    $exait[$nbexait]["aire"] += ($pointcourses[$i - 1]['difference'] + $pointcourses[$i]['difference']) / 2;
+                    $exait[$nbexait]["aire"] += (($pointcourses[$i - 1]['difference'] ?? 0) + $pointcourses[$i]['difference']) / 2;
                     $exait[$nbexait]["fin"] = $i;
                 }
 
@@ -834,19 +829,18 @@ class CourseController extends Controller
                 if ($nbexait > -1 && $pointcourses[$i]['difference'] > 2) {
                     $exait[$nbexait]["fin"] = $i;
                 }
-            } elseif ($i > 0 && (($pointcourses[$i]['vitesse'] - ($pointcourses[$i - 1]['limite'] ?? 0)) > 2) && ($pointcourses[$i - 1]['difference'] ?? 0) > 2) {
-                $exait[$nbexait]["aire"] += (($pointcourses[$i - 1]['difference'] ?? 0) + ($pointcourses[$i]['vitesse'] - ($pointcourses[$i - 1]['limite'] ?? 0))) / 2;
+            } elseif ($i > 0 && ((($pointcourses[$i]['vitesse'] ?? 0) - ($pointcourses[$i - 1]['limite'] ?? 0)) > 2) && ($pointcourses[$i - 1]['difference'] ?? 0) > 2) {
+                $exait[$nbexait]["aire"] += (($pointcourses[$i - 1]['difference'] ?? 0) + (($pointcourses[$i]['vitesse'] ?? 0) - ($pointcourses[$i - 1]['limite'] ?? 0))) / 2;
                 $exait[$nbexait]["fin"] = $i;
             }
         }
-        //dd($pointcourses);
+
         // Si le décalage est trop important, vider les excès
         if ($dec > 1000) {
             $exait = [];
         }
 
         // Traitement des excès et insertion en base de données
-
         $ladate = $course->ladate ? $course->ladate->format('Y-m-d') : date('Y-m-d');
 
         // Supprimer les anciens excès de cette course
@@ -854,7 +848,7 @@ class CourseController extends Controller
 
         // Récupérer l'enveloppe pour les informations de lieu
         $enveloppeModel = Enveloppe::find($quelenv);
-        //dd($exait);
+
         // Traitement des excès
         foreach ($exait as $i => &$item) {
 
@@ -873,7 +867,7 @@ class CourseController extends Controller
             if ($autorise > 50) $tolerance = 55;
             if ($autorise > 60) $tolerance = 64;
 
-            // Condition pour les dates après 2023-06-01
+            // Condition pour les dates
             if ($ladate < '2025-11-01') $tolerance = 10;
 
             $item["passe"] = ($item["aire"] ?? 0) >= $tolerance;
@@ -902,7 +896,7 @@ class CourseController extends Controller
 
             // Trouver les lieux de début et fin (interstation)
             $lieudebut = "--";
-            for ($j = 0; $j < count($nouveauEnv) && $nouveauEnv[$j]['x'] < $item["debut"]; $j++) {
+            for ($j = 0; $j < count($nouveauEnv) && ($nouveauEnv[$j]['x'] ?? PHP_INT_MAX) < $item["debut"]; $j++) {
                 if (isset($nouveauEnv[$j]['stp']) && $nouveauEnv[$j]['stp'] == 1) {
                     // Si l'enveloppe a un label, l'utiliser, sinon utiliser les infos de l'enveloppe
                     if (isset($nouveauEnv[$j]['label'])) {
@@ -914,7 +908,7 @@ class CourseController extends Controller
             }
 
             $lieufin = "--";
-            for ($j = 0; $j < count($nouveauEnv) && $nouveauEnv[$j]['x'] < $item["fin"]; $j++);
+            for ($j = 0; $j < count($nouveauEnv) && ($nouveauEnv[$j]['x'] ?? PHP_INT_MAX) < $item["fin"]; $j++);
             for ($k = $j; $k < count($nouveauEnv) && isset($nouveauEnv[$k]['stp']) && $nouveauEnv[$k]['stp'] == 0; $k++);
             if ($k < count($nouveauEnv)) {
                 if (isset($nouveauEnv[$k]['label'])) {
@@ -928,7 +922,7 @@ class CourseController extends Controller
 
             // Trouver le détail
             $detail = "";
-            for ($j = 0; $j < count($nouveauEnv) && $nouveauEnv[$j]['x'] <= $item["debut"]; $j++);
+            for ($j = 0; $j < count($nouveauEnv) && ($nouveauEnv[$j]['x'] ?? PHP_INT_MAX) <= $item["debut"]; $j++);
             if (isset($nouveauEnv[$j - 1]['label'])) {
                 $detail = $nouveauEnv[$j - 1]['label'];
             } elseif (isset($nouveauEnv[$j]['label'])) {
@@ -940,7 +934,7 @@ class CourseController extends Controller
 
             $item["dist"] = $item["fin"] - $item["debut"];
             // Insérer dans la base de données
-            if($item["passe"])Exces::create([
+            if($item["passe"]) Exces::create([
                 'idcourse' => $course->idcourse,
                 'aire' => round($item["aire"] ?? 0, 2),
                 'maxx' => round((float)str_replace(",", ".", $item["max"] ?? 0), 2),
@@ -955,80 +949,70 @@ class CourseController extends Controller
             $item["dd"] = ($item["debut"] ?? 0) - 10;
             $item["ff"] = ($item["fin"] ?? 0) + 10;
         }
-        $exait=array_filter($exait, function($item) {
-            return $item["passe"];
+        $exait = array_filter($exait, function($item) {
+            return $item["passe"] ?? false;
         });
+
         // Récupérer les excès mis à jour
         $exces = $course->exces()->get();
         $enveloppeSelected = $nouveauEnv;
 
         // Traitement des freinages
-        $nbbrake=0;
-        $brake=[];
+        $nbbrake = 0;
+        $brake = [];
         foreach ($pointcourses as $i => $pointcourse) {
-            if($pointcourses[$i]['FU']==1)if($i==0 || $pointcourses[$i-1]['FU']==0){
-                //$nbFU++;
-                $station_avant=array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
-                    if(($i-$v['x'])<($i-$t['x']) && $v['x']<=$i && ($v['stp']==1 || $v==$nouveauEnv[0])) return $v;return $t;
+            if(($pointcourses[$i]['FU'] ?? 0) == 1) if($i==0 || ($pointcourses[$i-1]['FU'] ?? 0) == 0){
+                $station_avant = array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
+                    if(($i-($v['x'] ?? 0)) < ($i-($t['x'] ?? 0)) && ($v['x'] ?? 0) <= $i && (($v['stp'] ?? 0) == 1 || $v==$nouveauEnv[0])) return $v; return $t;
                 },$nouveauEnv[0]);
-                if($station_avant['stp']!=1)$station_avant="--";
-                //$reverseEnv=array_reverse($nouveauEnv,true);
-                $station_apres=array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
-                    if($t['x']<$i && $v['x']>$i && ($v['stp']==1 || $v==$nouveauEnv[count($nouveauEnv)-1])) return $v;return $t;
-                },$station_avant);
-                if($station_apres['stp']!=1)$station_apres="--";
-                $detail=array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
-                    if(($i-$v['x'])<($i-$t['x']) && $v['x']<=$i) return $v;return $t;
+                if(($station_avant['stp'] ?? 0) != 1) $station_avant = "--";
+                $station_apres = array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
+                    if(($t['x'] ?? -1) < $i && ($v['x'] ?? PHP_INT_MAX) > $i && (($v['stp'] ?? 0) == 1 || $v==$nouveauEnv[count($nouveauEnv)-1])) return $v; return $t;
+                },is_array($station_avant) ? $station_avant : $nouveauEnv[0]);
+                if(($station_apres['stp'] ?? 0) != 1) $station_apres = "--";
+                $detail = array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
+                    if(($i-($v['x'] ?? 0)) < ($i-($t['x'] ?? 0)) && ($v['x'] ?? 0) <= $i) return $v; return $t;
                 },$nouveauEnv[0]);
 
+                $brake[$nbbrake]["interstation"] = (is_array($station_avant)?$station_avant['label']:"--") . " -- " . (is_array($station_apres)?$station_apres['label']:"--");
+                $brake[$nbbrake]['type'] = "FU";
+                $brake[$nbbrake]['detail'] = is_array($detail)?$detail['label']:"--";
+                $brake[$nbbrake]['heure'] = substr($pointcourses[$i]['temps'],11);
+                $brake[$nbbrake]['vitesse'] = intval($pointcourses[$i]['vitesse']);
 
-
-                $brake[$nbbrake]["interstation"]=$station_avant['label']." -- ".$station_apres['label'];
-                $brake[$nbbrake]['type']="FU";
-                $brake[$nbbrake]['detail']=$detail['label'];
-                $brake[$nbbrake]['heure']=substr($pointcourses[$i]['temps'],11);
-                $brake[$nbbrake]['vitesse']=intval($pointcourses[$i]['vitesse']);
-
-                //echo "FU: distance:".$i." vitesse:".$pointcourses[$i]['vitesse']." station avant:".$station_avant['label']." station apres:".$station_apres['label']."<br>";
                 $nbbrake++;
             }
-            if($pointcourses[$i]['patin']==1)if($i==0 || $pointcourses[$i-1]['patin']==0){
-                //$nbpatin++;
-                $station_avant=array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
-                    if($i-$v['x']<$i-$t['x'] && $v['x']<$i && ($v['stp']==1 || $v==$nouveauEnv[0])) return $v;return $t;
+            if(($pointcourses[$i]['patin'] ?? 0) == 1) if($i==0 || ($pointcourses[$i-1]['patin'] ?? 0) == 0){
+                $station_avant = array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
+                    if($i-($v['x'] ?? 0) < $i-($t['x'] ?? 0) && ($v['x'] ?? 0) < $i && (($v['stp'] ?? 0) == 1 || $v==$nouveauEnv[0])) return $v; return $t;
                 },$nouveauEnv[0]);
-                //$reverseEnv=array_reverse($nouveauEnv,true);
-                $station_apres=array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
-                    if($t['x']<$i && $v['x']>$i && ($v['stp']==1 || $v==$nouveauEnv[count($nouveauEnv)-1])) return $v;return $t;
-                },$station_avant);
+                $station_apres = array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
+                    if(($t['x'] ?? -1) < $i && ($v['x'] ?? PHP_INT_MAX) > $i && (($v['stp'] ?? 0) == 1 || $v==$nouveauEnv[count($nouveauEnv)-1])) return $v; return $t;
+                },is_array($station_avant) ? $station_avant : $nouveauEnv[0]);
 
-                $detail=array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
-                    if(($i-$v['x'])<($i-$t['x']) && $v['x']<=$i) return $v;return $t;
+                $detail = array_reduce($nouveauEnv,function($t,$v) use($i,$nouveauEnv){
+                    if(($i-($v['x'] ?? 0)) < ($i-($t['x'] ?? 0)) && ($v['x'] ?? 0) <= $i) return $v; return $t;
                 },$nouveauEnv[0]);
 
-
-                $brake[$nbbrake]["interstation"]=$station_avant['label']." -- ".$station_apres['label'];
-                $brake[$nbbrake]['type']="patin";
-                $brake[$nbbrake]['detail']=$detail['label'];
-                $brake[$nbbrake]['heure']=substr($pointcourses[$i]['temps'],11);
-                $brake[$nbbrake]['vitesse']=intval($pointcourses[$i]['vitesse']);
+                $brake[$nbbrake]["interstation"] = (is_array($station_avant)?$station_avant['label']:"--") . " -- " . (is_array($station_apres)?$station_apres['label']:"--");
+                $brake[$nbbrake]['type'] = "patin";
+                $brake[$nbbrake]['detail'] = is_array($detail)?$detail['label']:"--";
+                $brake[$nbbrake]['heure'] = substr($pointcourses[$i]['temps'],11);
+                $brake[$nbbrake]['vitesse'] = intval($pointcourses[$i]['vitesse']);
 
                 $nbbrake++;
-                //echo "PATIN: distance:".$i." vitesse:".$pointcourses[$i]['vitesse']." station avant:".$station_avant['label']." station apres:".$station_apres['label']."<br>";
-
             }
-
         }
-        //dd($nouveauEnv);
-        //temps de parcours relevé
+
+        // temps de parcours relevé
         $f=0;
         $parcours=[];
         $nbparcours=0;
-        for ($i=0,$prec=0; $i < count($nouveauEnv) && $nouveauEnv[$i]['x']<count($pointcourses) ; $i++)if($nouveauEnv[$i]['stp']==1 && $dec<=150) {
-            $parcours[$nbparcours]['distance']=$nouveauEnv[$i]['x'];
-            $parcours[$nbparcours]['vitesse_autorisee']=$nouveauEnv[$i]['y'];
-            $parcours[$nbparcours]['station']=$nouveauEnv[$i]['label'];
-            $parcours[$nbparcours]['heure_passage']=$pointcourses[$nouveauEnv[$i]['x']]['temps']
+        for ($i=0,$prec=0; $i < count($nouveauEnv) && ($nouveauEnv[$i]['x'] ?? PHP_INT_MAX) < count($pointcourses) ; $i++) if(($nouveauEnv[$i]['stp'] ?? 0) == 1 && $dec<=150) {
+            $parcours[$nbparcours]['distance'] = $nouveauEnv[$i]['x'];
+            $parcours[$nbparcours]['vitesse_autorisee'] = $nouveauEnv[$i]['y'];
+            $parcours[$nbparcours]['station'] = $nouveauEnv[$i]['label'];
+            $parcours[$nbparcours]['heure_passage'] = $pointcourses[$nouveauEnv[$i]['x']]['temps']
                 ->format('H:i:s');
             if ($i == 0) {
                 $diff = $pointcourses[$nouveauEnv[$i]['x']]['temps']->diff($pointcourses[0]['temps']);
@@ -1044,26 +1028,21 @@ class CourseController extends Controller
                 $parcours[$nbparcours]['temps_echange'] = 0;
             }
 
-            // Pour le départ, si vous voulez un timestamp :
             $parcours[$nbparcours]['heure_depart'] = $pointcourses[$nouveauEnv[$i]['x']]['temps']
                 ->addSeconds($parcours[$nbparcours]['temps_echange'])
                 ->format('H:i:s');
-            if($i==0)Course::where('idcourse', request('id'))
+            if($i==0) Course::where('idcourse', request('id'))
                 ->update([
                     'heure' => $parcours[$nbparcours]['heure_depart']
                 ]);
-            $ecart=proche($pointcourses,$env[$quelenv]->matrice[$i]['x'],$prec);
-            $parcours[$nbparcours]['difference']=$ecart-$prec;
-            if(abs($ecart-$prec)<=50)$prec=$ecart;
-
+                
+            $ecart = proche($pointcourses,$env[$quelenv]->matrice[$i]['x'],$prec);
+            $parcours[$nbparcours]['difference'] = $ecart-$prec;
+            if(abs($ecart-$prec)<=50) $prec=$ecart;
 
             $f=$i;
             $nbparcours++;
         }
-
-
-        // Après le traitement des excès, avant le return view()
-        $enveloppeModel = Enveloppe::find($quelenv);
 
         // Compter les occurrences
         $nbGong = 0;
@@ -1081,9 +1060,7 @@ class CourseController extends Controller
             $nbFU += $point['FU'] ?? 0;
             $nbPatin += $point['patin'] ?? 0;
         }
-
-        // Ajouter ces variables à la vue
-        return view('courses.show', compact(
+        return compact(
             'parcours',
             'brake',
             'nouveauEnv',
@@ -1104,10 +1081,45 @@ class CourseController extends Controller
             'nbGong',
             'nbKlaxon',
             'nbFU',
-            'nbPatin'
-        ));
+            'nbPatin',
+            'lannee'
+        );
     }
 
+    /**
+     * Display the specified resource.
+     */
+    public function show( Course $course)
+    {
+        $data = $this->buildCourseViewData($course);
+        if ($data instanceof \Illuminate\Http\RedirectResponse) {
+            return $data;
+        }
+        $course->idenveloppe = $data['quelenv'] ?? null;
+        $course->gong=$data['nbGong'] ?? 0;
+        $course->klaxon=$data['nbKlaxon'] ?? 0;
+        $course->FU=$data['nbFU'] ?? 0;
+        $course->patin=$data['nbPatin'] ?? 0;
+        $course->save();
+
+        //dd($data);
+        return view('courses.show', $data);
+    }
+
+    public function depouillement($idcourse)
+    {   
+        try{
+            $course=Course::findOrFail($idcourse);
+            $data = $this->buildCourseViewData($course);
+            if ($data instanceof \Illuminate\Http\RedirectResponse) {
+                return $data;
+            }
+            return view('courses.depouillement', $data);
+        }catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('courses.index')
+                ->with('error', 'Course non trouvée.');
+        }
+    }
     /**
      * Show the form for editing the specified resource.
      */
