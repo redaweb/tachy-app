@@ -1108,7 +1108,8 @@ class CourseController extends Controller
 
     public function depouillement($idcourse)
     {   
-        try{
+        try
+        {
             $course=Course::findOrFail($idcourse);
             $data = $this->buildCourseViewData($course);
             if ($data instanceof \Illuminate\Http\RedirectResponse) {
