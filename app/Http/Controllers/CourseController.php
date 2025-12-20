@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Spipu\Html2Pdf\Html2Pdf;
+use Spipu\Html2Pdf\Exception\Html2PdfException;
+use Spipu\Html2Pdf\Exception\ExceptionFormatter;
 
 class CourseController extends Controller
 {
@@ -1108,90 +1111,47 @@ class CourseController extends Controller
         return view('courses.show', $data);
     }
     
-
     public function depouillement($idcourse)
-    {   
-        // 1. Augmenter la mémoire et le temps pour les 17 000 points
-        ini_set('memory_limit', '1024M'); // J'ai augmenté à 1Go par sécurité
-        ini_set('max_execution_time', 300); // 5 minutes
-
-        try
-        {
-            // ---------------------------------------------------------
-            // CORRECTION DE L'ERREUR "mkdtemp" (WAMP/Windows)
-            // On force Browsershot à utiliser un dossier dans "storage" 
-            // au lieu du dossier temporaire Windows auquel il n'a pas accès.
-            // ---------------------------------------------------------
-            $tempDir = storage_path('app/browsershot');
-            if (!file_exists($tempDir)) {
-                mkdir($tempDir, 0777, true);
+{
+    try {
+        $course = Course::findOrFail($idcourse);
+        $data = $this->buildCourseViewData($course);
+        
+        // Ajouter les données de l'image directement pour éviter les problèmes de chemin
+        $logosetramPath = public_path('logosetram.png');
+        $cerclesetramPath = public_path('cerclesetram.png');
+        
+        // Fonction pour encoder les images en base64
+        $imageToBase64 = function($path) {
+            if (file_exists($path)) {
+                $type = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                return 'data:image/' . $type . ';base64,' . base64_encode($data);
             }
-
-            $course = Course::findOrFail($idcourse);
-            $data = $this->buildCourseViewData($course);
-            
-            if ($data instanceof \Illuminate\Http\RedirectResponse) {
-                return $data;
-            }
-            
-            // A. Compilation HTML
-            $html = view('courses.depouillement', $data)->render();
-
-            // B. Configuration Browsershot
-            $pdf = Browsershot::html($html)
-                
-                // Chemins Node.js (Vérifiez qu'ils sont corrects sur VOTRE PC)
-                ->setNodeBinary('C:\\Program Files\\nodejs\\node.exe')
-                ->setNpmBinary('C:\\Program Files\\nodejs\\npm.cmd')
-
-                ->setChromePath('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe')
-
-                // --- LA LIGNE MAGIQUE POUR L'ERREUR ---
-                ->setUserDataDir($tempDir) 
-                // --------------------------------------
-
-                ->writeOptionsToFile() // Aide sur Windows
-                ->noSandbox()          // Indispensable
-                
-                // Format & Rendu
-                ->format('A4')
-                ->landscape()
-                ->margins(5, 5, 5, 5)   // Marges fines pour gagner de la place
-                ->windowSize(1250, 900) // Largeur virtuelle pour que le Canvas rentre bien
-                
-                // Délais pour gérer la lourdeur des données (17k lignes)
-                ->timeout(300) // Timeout de Node (5 min)
-                ->delay(3000)  // Attente (3 sec) pour que le JS finisse l'animation/dessin
-                
-                // Arguments Chrome pour la stabilité
-                ->setOption('args', [
-                    '--no-sandbox',
-                    '--disable-gpu',
-                    '--disable-dev-shm-usage',
-                    '--single-process',
-                    '--no-zygote'
-                ])
-
-                ->pdf();
-
-            // C. Envoi du PDF
-            return response($pdf)
-                ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', 'inline; filename="Rapport-'.$course->code.'.pdf"');
-
-        } 
-        // Capture spécifique pour voir l'erreur Browsershot si ça plante encore
-        catch (CouldNotTakeBrowsershot $e) {
-            dd('Erreur Browsershot :', $e->getMessage());
-        }
-        catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return redirect()->route('courses.index')
-                ->with('error', 'Course non trouvée.');
-        }
-        catch (\Exception $e) {
-            dd('Autre Erreur :', $e->getMessage());
-        }
+            return null;
+        };
+        
+        // Fusionner toutes les données
+        $viewData = array_merge($data, [
+            'course' => $course,
+            'logosetram' => $imageToBase64($logosetramPath),
+            'cerclesetram' => $imageToBase64($cerclesetramPath),
+        ]);
+        
+        return view('courses.depouillement', $viewData);
+        
+    } catch (\Exception $e) {
+        // Pour le débogage, afficher l'erreur
+        return response()->json([
+            'error' => 'Erreur lors du chargement',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
     }
+}
+
+
+    
     /**
      * Show the form for editing the specified resource.
      */

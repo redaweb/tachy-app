@@ -12,7 +12,8 @@
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.6",
-        "spatie/browsershot": "^3.61"
+        "spatie/browsershot": "^3.61",
+        "spipu/html2pdf": "^5.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
