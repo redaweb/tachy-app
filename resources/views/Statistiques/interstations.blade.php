@@ -18,14 +18,16 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">
             <i class="fas fa-map-marker-alt me-2"></i>Répartition par inter-station
+            <span class="badge bg-primary ms-2">{{ session('site') }}</span>
         </h4>
         <div class="text-muted small" x-text="`Données du ${formatDate($store.statistiques.filtres.debut)} au ${formatDate($store.statistiques.filtres.fin)}`"></div>
     </div>
 
+    <!-- Graphique -->
     <div class="card mb-4">
         <div class="card-header bg-white">
             <h6 class="mb-0">
-                <i class="fas fa-chart-bar me-2"></i>Graphique par inter-station
+                <i class="fas fa-chart-bar me-2"></i>Top 20 des inter-stations par nombre d'excès
             </h6>
         </div>
         <div class="card-body">
@@ -35,7 +37,8 @@
         </div>
     </div>
 
-    <div class="card">
+    <!-- Tableau des interstations -->
+    <div class="card mb-4">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <h6 class="mb-0">
                 <i class="fas fa-table me-2"></i>Liste des inter-stations
@@ -55,6 +58,7 @@
                 <table class="table table-hover mb-0 stat-table">
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>Inter-station</th>
                             <th>Voie</th>
                             <th class="table-secondary">Total excès</th>
@@ -65,10 +69,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template x-for="interstation in paginatedInterstations" :key="interstation.nom">
+                        <template x-for="(interstation, index) in paginatedInterstations" :key="interstation.nom">
                             <tr>
+                                <td x-text="((currentPage - 1) * perPage) + index + 1"></td>
                                 <td x-text="interstation.nom"></td>
-                                <td x-text="interstation.voie"></td>
+                                <td>
+                                    <span class="badge" :class="interstation.voie === 'V1' ? 'bg-danger' : 'bg-primary'">
+                                        <i class="fas fa-road me-1"></i><span x-text="interstation.voie"></span>
+                                    </span>
+                                </td>
                                 <td class="table-secondary fw-bold" x-text="interstation.total"></td>
                                 <td x-text="interstation.mineur"></td>
                                 <td x-text="interstation.moyen"></td>
@@ -101,31 +110,88 @@
         </div>
     </div>
 
-    <!-- Section carte interactive -->
-    @if($site == 'ALG' || $site == 'ORN' || $site == 'CST') <!-- Adapter selon les sites disponibles -->
-    <div class="card mt-4">
+    <!-- Carte interactive -->
+    @php
+        $site = session('site', 'ALG');
+    @endphp
+
+    <div class="card">
         <div class="card-header bg-white">
             <h6 class="mb-0">
-                <i class="fas fa-map me-2"></i>Carte interactive
+                <i class="fas fa-map me-2"></i>Carte interactive de la ligne
+                <small class="text-muted ms-2">(Cliquez sur un point pour voir les détails)</small>
             </h6>
         </div>
         <div class="card-body">
-            <div style="position: relative; height: 600px; border: 1px solid #dee2e6;">
-                <div id="tooltip" style="position: absolute; background: white; padding: 10px; border: 1px solid #ccc; display: none; z-index: 100;"></div>
-                <canvas id="carteCanvas" width="1000" height="600"></canvas>
+            <div style="position: relative; height: 600px; border: 1px solid #dee2e6; background-color: #f8f9fa;">
+                <!-- Tooltip -->
+                <div id="carteTooltip" style="position: absolute; background: white; padding: 15px; border: 1px solid #ddd; border-radius: 5px; display: none; z-index: 100; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                    <h6 class="mb-2" id="tooltipTitle"></h6>
+                    <table class="table table-sm mb-2" id="tooltipStats"></table>
+                    <div class="text-end">
+                        <button class="btn btn-sm btn-outline-primary" id="btnVoirDetails">
+                            <i class="fas fa-external-link-alt me-1"></i>Voir les excès
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canvas -->
+                <canvas id="carteCanvas" width="1000" height="600" style="cursor: crosshair;"></canvas>
+
+                <!-- Légende -->
+                <div style="position: absolute; bottom: 10px; right: 10px; background: white; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                    <small class="fw-bold">Légende:</small>
+                    <div class="d-flex align-items-center mt-1">
+                        <div style="width: 15px; height: 15px; background: rgba(255, 0, 0, 0.7); border-radius: 50%; margin-right: 5px;"></div>
+                        <small>Voie V1</small>
+                    </div>
+                    <div class="d-flex align-items-center mt-1">
+                        <div style="width: 15px; height: 15px; background: rgba(0, 0, 255, 0.7); border-radius: 50%; margin-right: 5px;"></div>
+                        <small>Voie V2</small>
+                    </div>
+                    <div class="mt-2">
+                        <small>Taille proportionnelle au nombre d'excès</small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    @endif
 </div>
 
+@push('styles')
+<style>
+    #carteTooltip table {
+        font-size: 0.85rem;
+    }
+
+    #carteTooltip th {
+        font-weight: 600;
+        padding-right: 10px;
+    }
+
+    #carteTooltip td {
+        text-align: right;
+    }
+</style>
+@endpush
+
 @push('scripts')
+<!-- Charger le manager de carto -->
+<script src="{{ asset('js/carto/carto-manager.js') }}"></script>
+
+<!-- Charger la carto spécifique au site -->
+@if(file_exists(public_path('js/carto/carto-' . strtolower($site) . '.js')))
+<script src="{{ asset('js/carto/carto-' . strtolower($site) . '.js') }}"></script>
+@endif
+
 <script>
 function repartitionInterstations() {
     return {
         chart: null,
         currentPage: 1,
         perPage: 10,
+        carte: null,
+        selectedInterstation: null,
 
         // Propriétés calculées
         get donneesFiltrees() {
@@ -197,6 +263,13 @@ function repartitionInterstations() {
             return this.interstationsData.slice(start, start + this.perPage);
         },
 
+        get excesForSelectedInterstation() {
+            if (!this.selectedInterstation) return [];
+            return this.donneesFiltrees.exces.filter(e =>
+                e.interstation === this.selectedInterstation.nom
+            );
+        },
+
         // Méthodes
         init() {
             this.initChart();
@@ -205,6 +278,7 @@ function repartitionInterstations() {
             window.addEventListener('statistiques-filtres-appliques', () => {
                 this.majChart();
                 this.currentPage = 1;
+                this.majCarte();
             });
 
             // Écouter le chargement initial des données
@@ -216,6 +290,7 @@ function repartitionInterstations() {
 
         initChart() {
             const ctx = document.getElementById('interstationsChart');
+            if (!ctx) return;
 
             this.chart = new Chart(ctx.getContext('2d'), {
                 type: 'bar',
@@ -255,9 +330,25 @@ function repartitionInterstations() {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.dataset.label || '';
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    return `${label}: ${value}`;
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         x: {
-                            stacked: true
+                            stacked: true,
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
                         },
                         y: {
                             stacked: true,
@@ -277,7 +368,7 @@ function repartitionInterstations() {
             // Limiter à 20 interstations max pour la lisibilité
             const interstations = this.interstationsData.slice(0, 20);
 
-            this.chart.data.labels = interstations.map(i => i.nom);
+            this.chart.data.labels = interstations.map(i => i.nom.substring(0, 20) + (i.nom.length > 20 ? '...' : ''));
             this.chart.data.datasets[0].data = interstations.map(i => i.mineur);
             this.chart.data.datasets[1].data = interstations.map(i => i.moyen);
             this.chart.data.datasets[2].data = interstations.map(i => i.grave);
@@ -285,80 +376,195 @@ function repartitionInterstations() {
             this.chart.update();
         },
 
-        initCarte() {
-            // Cette fonction initialise la carte interactive
-            // Vous devrez adapter les coordonnées selon votre site
+        async initCarte() {
+            const canvas = document.getElementById('carteCanvas');
+            const tooltip = document.getElementById('carteTooltip');
+            const btnDetails = document.getElementById('btnVoirDetails');
+            const site = '{{ session("site", "ALG") }}';
+
+            if (!canvas) return;
+
+            // Vérifier si la carto existe pour ce site
+            const cartoModule = window['carto' + site.toUpperCase()];
+
+            if (!cartoModule || !cartoModule.listeInter) {
+                this.afficherMessageCarte("Cartographie non disponible pour ce site");
+                return;
+            }
+
+            this.carte = cartoModule;
+            await this.majCarte();
+
+            // Gestionnaire d'événements pour le canvas
+            canvas.addEventListener('mousemove', (e) => this.onCanvasMouseMove(e));
+            canvas.addEventListener('click', (e) => this.onCanvasClick(e));
+
+            // Bouton voir les détails
+            if (btnDetails) {
+                btnDetails.addEventListener('click', () => this.afficherDetailsInterstation());
+            }
+
+            // Cacher la tooltip quand on quitte le canvas
+            canvas.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+            });
+        },
+
+        onCanvasMouseMove(e) {
+            if (!this.carte) return;
+
+            const canvas = document.getElementById('carteCanvas');
+            const tooltip = document.getElementById('carteTooltip');
+            const rect = canvas.getBoundingClientRect();
+
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const found = this.carte.getInterstationAtPosition(x, y, this.interstationsData, 20);
+
+            if (found) {
+                tooltip.style.left = (e.clientX + 20) + 'px';
+                tooltip.style.top = (e.clientY + 20) + 'px';
+                tooltip.style.display = 'block';
+
+                // Mettre à jour le contenu de la tooltip
+                document.getElementById('tooltipTitle').textContent = found.inter.nom;
+
+                const statsHtml = `
+                    <tr><th>Voie:</th><td>${found.inter.voie}</td></tr>
+                    <tr><th>Total excès:</th><td class="fw-bold">${found.data.total}</td></tr>
+                    <tr><th>Mineur:</th><td><span class="badge badge-mineur">${found.data.mineur}</span></td></tr>
+                    <tr><th>Moyen:</th><td><span class="badge badge-moyen">${found.data.moyen}</span></td></tr>
+                    <tr><th>Grave:</th><td><span class="badge badge-grave">${found.data.grave}</span></td></tr>
+                    <tr><th>Majeur:</th><td><span class="badge badge-majeur">${found.data.majeur}</span></td></tr>
+                `;
+
+                document.getElementById('tooltipStats').innerHTML = statsHtml;
+
+                // Stocker l'interstation sélectionnée pour le clic
+                this.selectedInterstation = found;
+            } else {
+                tooltip.style.display = 'none';
+                this.selectedInterstation = null;
+            }
+        },
+
+        onCanvasClick(e) {
+            if (this.selectedInterstation) {
+                this.afficherDetailsInterstation();
+            }
+        },
+
+        afficherDetailsInterstation() {
+            if (!this.selectedInterstation) return;
+
+            const interstation = this.selectedInterstation.inter.nom;
+            const exces = this.excesForSelectedInterstation;
+
+            // Ouvrir une modal ou un nouvel onglet avec les détails
+            const modalHtml = `
+                <div class="modal fade" id="modalInterstationDetails" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Détails pour: ${interstation}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Voie:</strong> ${this.selectedInterstation.inter.voie}</p>
+                                <p><strong>Nombre d'excès:</strong> ${exces.length}</p>
+
+                                ${exces.length > 0 ? `
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Conducteur</th>
+                                                <th>Catégorie</th>
+                                                <th>Détails</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${exces.slice(0, 20).map(exce => `
+                                                <tr>
+                                                    <td>${this.formatDate(exce.ladate)}</td>
+                                                    <td>${exce.nom}</td>
+                                                    <td><span class="badge ${this.getBadgeClass(exce.categorie)}">${exce.categorie}</span></td>
+                                                    <td>${exce.detail}</td>
+                                                    <td>
+                                                        <button onclick="window.open('/lacourse?id=${exce.idcourse}', '_blank')"
+                                                                class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-external-link-alt"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    ${exces.length > 20 ? `<p class="text-muted">... et ${exces.length - 20} autres excès</p>` : ''}
+                                </div>
+                                ` : '<p class="text-muted">Aucun excès détaillé disponible</p>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Injecter et afficher la modal
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = modalHtml;
+            document.body.appendChild(modalContainer);
+
+            const modal = new bootstrap.Modal(document.getElementById('modalInterstationDetails'));
+            modal.show();
+
+            // Nettoyer après fermeture
+            document.getElementById('modalInterstationDetails').addEventListener('hidden.bs.modal', () => {
+                modalContainer.remove();
+            });
+        },
+
+        async majCarte() {
+            const canvas = document.getElementById('carteCanvas');
+            if (!canvas || !this.carte) return;
+
+            try {
+                await this.carte.initCarto(canvas, this.interstationsData);
+            } catch (error) {
+                this.afficherMessageCarte("Erreur de chargement de la carte");
+            }
+        },
+
+        afficherMessageCarte(message) {
             const canvas = document.getElementById('carteCanvas');
             if (!canvas) return;
 
             const ctx = canvas.getContext('2d');
-            const tooltip = document.getElementById('tooltip');
-
-            // Nettoyer le canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Ici, vous devrez implémenter la logique de dessin de la carte
-            // en fonction des données d'interstations
-            // C'est une version simplifiée
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            const interstations = this.interstationsData.slice(0, 15);
+            ctx.fillStyle = '#6c757d';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+        },
 
-            // Dessiner des points pour chaque interstation
-            interstations.forEach((inter, index) => {
-                const x = 50 + (index % 5) * 180;
-                const y = 50 + Math.floor(index / 5) * 120;
-
-                // Taille du point proportionnelle au nombre d'excès
-                const radius = Math.min(30, 10 + inter.total * 2);
-
-                // Couleur selon la voie
-                ctx.fillStyle = inter.voie === 'V1' ? 'rgba(255, 50, 50, 0.7)' : 'rgba(50, 50, 255, 0.7)';
-                ctx.beginPath();
-                ctx.arc(x, y, radius, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Texte avec le nombre d'excès
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 12px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(inter.total, x, y);
-
-                // Nom de l'interstation
-                ctx.fillStyle = '#333';
-                ctx.font = '10px Arial';
-                ctx.fillText(inter.nom, x, y + radius + 15);
-
-                // Gestion des événements de souris
-                canvas.addEventListener('mousemove', (e) => {
-                    const rect = canvas.getBoundingClientRect();
-                    const mouseX = e.clientX - rect.left;
-                    const mouseY = e.clientY - rect.top;
-
-                    const distance = Math.sqrt(Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2));
-
-                    if (distance <= radius) {
-                        tooltip.style.left = (e.clientX + 10) + 'px';
-                        tooltip.style.top = (e.clientY + 10) + 'px';
-                        tooltip.style.display = 'block';
-                        tooltip.innerHTML = `
-                            <strong>${inter.nom}</strong><br>
-                            Voie: ${inter.voie}<br>
-                            Total: ${inter.total}<br>
-                            Mineur: ${inter.mineur}<br>
-                            Moyen: ${inter.moyen}<br>
-                            Grave: ${inter.grave}<br>
-                            Majeur: ${inter.majeur}
-                        `;
-                    } else {
-                        tooltip.style.display = 'none';
-                    }
-                });
-            });
-
-            canvas.addEventListener('mouseout', () => {
-                tooltip.style.display = 'none';
-            });
+        getBadgeClass(categorie) {
+            const classes = {
+                'mineur': 'badge-mineur',
+                'moyen': 'badge-moyen',
+                'grave': 'badge-grave',
+                'majeur': 'badge-majeur'
+            };
+            return classes[categorie] || 'bg-secondary';
         },
 
         formatDate(dateStr) {
