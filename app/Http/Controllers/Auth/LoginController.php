@@ -128,6 +128,7 @@ class LoginController extends Controller
             $userSite = $user->site ?? 'ALG';
             Session::put('site', $userSite);
         }
+        Session::put('profil', $user->profil);
     }
 
     /**
@@ -140,7 +141,7 @@ class LoginController extends Controller
     {
         // Nettoyer la session du site avant la déconnexion
         Session::forget('site');
-        
+        Session::forget('profil');
         $this->guard()->logout();
 
         $request->session()->invalidate();

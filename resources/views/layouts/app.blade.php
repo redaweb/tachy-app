@@ -8,7 +8,8 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-@yield('styles')
+    @stack('styles')
+    @yield('styles')
     <style>
         :root {
         --primary-color: #2a3b90;
@@ -168,6 +169,33 @@
                                 <i class="fas fa-exclamation-triangle me-2"></i>Excès
                             </a>
                         </li>
+                        @if(in_array(auth()->user()->profil, ['DG', 'managerR', 'ADMIN', 'superadmin']) ||
+                            in_array(auth()->user()->matricule, ['310040', '310020']))
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="statistiquesDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-chart-bar me-2"></i>Statistiques
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="statistiquesDropdown">
+                                <li><a class="dropdown-item" href="{{ route('statistiques.categories') }}">Répartition par catégorie</a></li>
+                                <li><a class="dropdown-item" href="{{ route('statistiques.evolution') }}">Évolution par excès</a></li>
+                                <li><a class="dropdown-item" href="{{ route('statistiques.conducteurs') }}">Répartition par conducteur</a></li>
+                                <li><a class="dropdown-item" href="{{ route('statistiques.interstations') }}">Répartition par inter-station</a></li>
+                                <li><a class="dropdown-item" href="{{ route('statistiques.mensuelle') }}">Synthèse par mois</a></li>
+
+                                @if(in_array(auth()->user()->matricule, ['310040', '310020']) ||
+                                    auth()->user()->profil === 'DG' ||
+                                    auth()->user()->profil === 'managerR')
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ route('statistiques.tous-exces') }}">Tous les excès</a></li>
+                                @endif
+
+                                @if(in_array(auth()->user()->matricule, ['310040', '310020']))
+                                <li><a class="dropdown-item" href="{{ route('statistiques.journal') }}">Journal</a></li>
+                                @endif
+                            </ul>
+                        </li>
+                        @endif
                     </ul>
                 </div>
             </nav>
@@ -207,6 +235,7 @@
     @endauth
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    @stack('scripts')
     @yield('scripts')
 </body>
 </html>

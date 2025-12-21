@@ -25,9 +25,49 @@ class Enveloppe extends Model
         'site',
         'figer'
     ];
-
+    protected $casts = [
+        'importation' => 'datetime',
+        'figer' => 'boolean',
+    ];
     public function courses()
     {
         return $this->hasMany(Course::class, 'idenveloppe', 'idenveloppe');
+    }
+
+    /**
+     * Scope pour filtrer par site
+     */
+    public function scopeForSite($query, $site)
+    {
+        return $query->where('site', $site);
+    }
+
+    /**
+     * Scope pour filtrer les enveloppes figées
+     */
+    public function scopeFrozen($query)
+    {
+        return $query->where('figer', true);
+    }
+
+    /**
+     * Scope pour filtrer les enveloppes non figées
+     */
+    public function scopeNotFrozen($query)
+    {
+        return $query->where('figer', false);
+    }
+
+    /**
+     * Scope pour filtrer selon le statut de figement
+     */
+    public function scopeByFreezeStatus($query, $status)
+    {
+        if ($status === 'figer') {
+            return $query->frozen();
+        } elseif ($status === 'nonfiger') {
+            return $query->notFrozen();
+        }
+        return $query;
     }
 }

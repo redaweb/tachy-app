@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnveloppeController;
 use App\Http\Controllers\ExcesController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\StatistiqueController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -42,14 +43,40 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/courses/bydate/{ladate}', [CourseController::class, 'bydate'])->name('courses.bydate');
     route::get('/courses/depouillement/{idcourse}', [CourseController::class, 'depouillement'])->name('courses.depouillement');
     Route::post('/courses/upload', [CourseController::class, 'upload'])->name('courses.upload');
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Routes des ressources
     Route::resource('conducteurs', ConducteurController::class);
     Route::resource('courses', CourseController::class);
-    Route::resource('enveloppes', EnveloppeController::class);
     Route::resource('exces', ExcesController::class);
+
+    // Statistiques
+    Route::prefix('statistiques')->name('statistiques.')->group(function () {
+        Route::get('categories', [StatistiqueController::class, 'categories'])->name('categories');
+        Route::get('evolution', [StatistiqueController::class, 'evolution'])->name('evolution');
+        Route::get('conducteurs', [StatistiqueController::class, 'conducteurs'])->name('conducteurs');
+        Route::get('interstations', [StatistiqueController::class, 'interstations'])->name('interstations');
+        Route::get('mensuelle', [StatistiqueController::class, 'mensuelle'])->name('mensuelle');
+        Route::get('tous-exces', [StatistiqueController::class, 'tousExces'])->name('tous-exces');
+        Route::get('journal', [StatistiqueController::class, 'journal'])->name('journal');
+
+        // API endpoints
+        Route::get('api/exces', [StatistiqueController::class, 'apiExces'])->name('api.exces');
+        Route::get('api/exces-tous', [StatistiqueController::class, 'apiExcesTous'])->name('api.exces-tous');
+        Route::get('api/journal', [StatistiqueController::class, 'apiJournal'])->name('api.journal');
+        Route::get('export-csv', [StatistiqueController::class, 'exportCSV'])->name('export-csv');
+    });
+
+    // Routes Enveloppes (avec routes supplémentaires)
+    Route::prefix('enveloppes')->name('enveloppes.')->group(function () {
+        Route::get('/', [EnveloppeController::class, 'index'])->name('index');
+        Route::post('/', [EnveloppeController::class, 'store'])->name('store');
+        Route::delete('/{id}', [EnveloppeController::class, 'destroy'])->name('destroy');
+        Route::post('/toggle-freeze', [EnveloppeController::class, 'toggleFreeze'])->name('toggle-freeze');
+        Route::get('/read', [EnveloppeController::class, 'readEnvelope'])->name('read');
+    });
 
     // Route pour changer le site
     Route::post('/site/set', [SiteController::class, 'setSite'])->name('site.set');

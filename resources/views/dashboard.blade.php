@@ -185,6 +185,7 @@
                                 <th>Interstation</th>
                                 <th>Vitesse max</th>
                                 <th>Autorisé</th>
+                                <th>Catégorie</th>
                                 <th>Conducteur</th>
                             </tr>
                         </thead>
@@ -194,7 +195,8 @@
                                 <td>{{ Str::limit($exces->interstation ?? 'N/A', 20) }}</td>
                                 <td class="text-danger">{{ $exces->maxx ?? 0 }} km/h</td>
                                 <td>{{ $exces->autorise ?? 0 }} km/h</td>
-                                <td>{{ $exces->course->conducteur->prenom ?? 'N/A' }}</td>
+                                <td><span class="badge bg-primary">{{ $exces->categorie ?? 'N/A' }}</span></td>
+                                <td>{{ $course->conducteur->prenom ?? '' }} {{ $course->conducteur->nom ?? 'N/A' }}</td>
                             </tr>
                             @empty
                             <tr>

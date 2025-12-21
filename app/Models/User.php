@@ -31,6 +31,10 @@ class User extends Authenticatable
         'envBloque' => 'boolean'
     ];
 
+    public function getEnvBloqueAttribute()
+    {
+        return $this->attributes['envBloque'] ?? false;
+    }
     public function getAuthPassword()
     {
         return $this->motpass;
