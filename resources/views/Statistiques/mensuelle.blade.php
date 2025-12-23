@@ -171,8 +171,8 @@ function syntheseMensuelle() {
 
         // Propriétés calculées
         get donneesFiltrees() {
-            const filtres = $store.statistiques.filtres;
-            const donnees = $store.statistiques.donnees;
+            const filtres = Alpine.store('statistiques').filtres;
+            const donnees = Alpine.store('statistiques').donnees;
 
             if (!donnees.exces || !donnees.courses) {
                 return { exces: [], courses: [] };
@@ -327,7 +327,7 @@ function syntheseMensuelle() {
         },
 
         formatDate(dateStr) {
-            return $store.statistiques.formatDateAffichage(dateStr);
+            return Alpine.store('statistiques').formatDateAffichage(dateStr);
         }
     }
 }

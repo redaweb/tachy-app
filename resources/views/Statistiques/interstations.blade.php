@@ -6,7 +6,7 @@
 @section('statistiques-content')
 <div x-data="repartitionInterstations()" x-init="init()">
     <!-- Overlay de chargement -->
-    <div x-show="$store.statistiques.loading" class="loading-overlay">
+    <div x-show="Alpine.store('statistiques').loading" class="loading-overlay">
         <div class="text-center">
             <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
                 <span class="visually-hidden">Chargement...</span>
@@ -20,7 +20,7 @@
             <i class="fas fa-map-marker-alt me-2"></i>Répartition par inter-station
             <span class="badge bg-primary ms-2">{{ session('site') }}</span>
         </h4>
-        <div class="text-muted small" x-text="`Données du ${formatDate($store.statistiques.filtres.debut)} au ${formatDate($store.statistiques.filtres.fin)}`"></div>
+        <div class="text-muted small" x-text="`Données du ${formatDate(Alpine.store('statistiques').filtres.debut)} au ${formatDate(Alpine.store('statistiques').filtres.fin)}`"></div>
     </div>
 
     <!-- Graphique -->
@@ -193,8 +193,8 @@ function repartitionInterstations() {
 
         // Propriétés calculées
         get donneesFiltrees() {
-            const filtres = $store.statistiques.filtres;
-            const donnees = $store.statistiques.donnees;
+            const filtres = Alpine.store('statistiques').filtres;
+            const donnees = Alpine.store('statistiques').donnees;
 
             if (!donnees.exces) {
                 return { exces: [] };
@@ -566,7 +566,7 @@ function repartitionInterstations() {
         },
 
         formatDate(dateStr) {
-            return $store.statistiques.formatDateAffichage(dateStr);
+            return Alpine.store('statistiques').formatDateAffichage(dateStr);
         }
     }
 }

@@ -8,6 +8,18 @@
         min-height: calc(100vh - 140px);
     }
 
+    .filtres-sidebar-wrapper {
+        width: 250px;
+        min-width: 250px;
+    }
+
+    .filtres-sidebar {
+        position: sticky;
+        top: 56px;
+        max-height: calc(100vh - 140px);
+        overflow-y: auto;
+    }
+
     .filtres-sidebar {
         width: 250px;
         min-width: 250px;
@@ -16,7 +28,6 @@
         padding: 20px 15px;
         position: sticky;
         top: 56px;
-        height: calc(100vh - 140px);
         overflow-y: auto;
     }
 
@@ -151,9 +162,12 @@
 <div class="statistiques-container">
 
     <!-- Sidebar filtres -->
-    <aside class="filtres-sidebar">
-        @include('statistiques.partials.filtres')
+    <aside class="filtres-sidebar-wrapper">
+        <div class="filtres-sidebar">
+            @include('statistiques.partials.filtres')
+        </div>
     </aside>
+
 
     <!-- Contenu principal -->
     <main class="statistiques-content">
@@ -166,7 +180,6 @@
 
 @push('scripts')
 {{-- Bootstrap DOIT être avant Alpine --}}
-<script src="/js/bootstrap.js"></script>
 <script src="/js/alpine.min.js" defer></script>
 <script src="/js/chart.js"></script>
 <script src="/js/axios.min.js"></script>

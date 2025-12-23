@@ -239,293 +239,189 @@
 <script>
 function evolutionExces() {
     return {
+        store: Alpine.store('statistiques'),
         chart: null,
-        chartFiltered: null,
+        filteredChart: null,
+        loading: true,
+
         currentPage: 1,
         currentPageFiltered: 1,
         perPage: 10,
 
-        // Propriétés calculées
-        get donneesFiltrees() {
-            const filtres = $store.statistiques.filtres;
-            const donnees = $store.statistiques.donnees;
+        init() {
+            this.loading = true;
 
-            if (!donnees.exces) {
-                return { exces: [] };
+            // Écouteurs d'événements
+            window.addEventListener('statistiques-donnees-chargees', () => this.handleDataLoaded());
+            window.addEventListener('statistiques-filtres-appliques', () => this.handleDataLoaded());
+
+            // Premier chargement si données déjà présentes
+            if (this.store?.donnees?.excess) {
+                this.handleDataLoaded();
             }
-
-            const excesFiltres = donnees.exces.filter(exce => {
-                const dateExce = new Date(exce.ladate);
-                const dateDebut = new Date(filtres.debut);
-                const dateFin = new Date(filtres.fin);
-
-                return dateExce >= dateDebut &&
-                       dateExce <= dateFin &&
-                       filtres.voies.includes(exce.voie) &&
-                       filtres.categories.includes(exce.categorie) &&
-                       filtres.conducteurs.includes(exce.matricule + ' ' + exce.nom);
-            });
-
-            return { exces: excesFiltres };
         },
 
-        get excesFiltres() {
-            return this.donneesFiltrees.exces;
+        handleDataLoaded() {
+            this.loading = false;
+            this.currentPage = 1;
+            this.currentPageFiltered = 1;
+            this.initCharts();
         },
 
-        get excesFiltresNonExclus() {
-            return this.excesFiltres.filter(this.regle);
+        // ─── Données calculées ────────────────────────────────────────
+        get excesFiltrees() {
+            return this.filtrerExcess(false);
+        },
+
+        get excesNonExclus() {
+            return this.filtrerExcess(true);
         },
 
         get totalExces() {
-            return this.excesFiltres.length;
+            return this.excesFiltrees.length;
         },
 
         get totalFilteredExces() {
-            return this.excesFiltresNonExclus.length;
+            return this.excesNonExclus.length;
         },
 
         get totalPages() {
-            return Math.ceil(this.totalExces / this.perPage);
+            return Math.ceil(this.totalExces / this.perPage) || 1;
         },
 
         get totalFilteredPages() {
-            return Math.ceil(this.totalFilteredExces / this.perPage);
+            return Math.ceil(this.totalFilteredExces / this.perPage) || 1;
         },
 
         get paginatedExces() {
             const start = (this.currentPage - 1) * this.perPage;
-            return this.excesFiltres.slice(start, start + this.perPage);
+            return this.excesFiltrees.slice(start, start + this.perPage);
         },
 
         get filteredPaginatedExces() {
             const start = (this.currentPageFiltered - 1) * this.perPage;
-            return this.excesFiltresNonExclus.slice(start, start + this.perPage);
+            return this.excesNonExclus.slice(start, start + this.perPage);
         },
 
-        // Méthodes de règles
-        regle(exce) {
-            let tolerance = 10;
-            if (exce.autorise > 10) tolerance = 19;
-            if (exce.autorise > 20) tolerance = 28;
-            if (exce.autorise > 30) tolerance = 37;
-            if (exce.autorise > 40) tolerance = 46;
-            if (exce.autorise > 50) tolerance = 55;
-            if (exce.autorise > 60) tolerance = 64;
-            return exce.aire >= tolerance;
-        },
+        // ─── Filtrage ─────────────────────────────────────────────────
+        filtrerExcess(onlyNonExclus = false) {
+            if (!this.store?.donnees?.exces) return [];
 
-        tolerance(exce) {
-            let tolerance = 10;
-            if (exce.autorise > 10) tolerance = 19;
-            if (exce.autorise > 20) tolerance = 28;
-            if (exce.autorise > 30) tolerance = 37;
-            if (exce.autorise > 40) tolerance = 46;
-            if (exce.autorise > 50) tolerance = 55;
-            if (exce.autorise > 60) tolerance = 64;
-            return tolerance;
-        },
+            const filtres = this.store.filtres;
+            let exces = this.store.donnees.exces;
 
-        // Méthodes
-        init() {
-            this.initCharts();
+            // Filtrage date + filtres classiques
+            exces = exces.filter(ex => {
+                const date = new Date(ex.ladate);
+                const debut = new Date(filtres.debut);
+                const fin   = new Date(filtres.fin);
 
-            // Écouter les changements de filtres
-            window.addEventListener('statistiques-filtres-appliques', () => {
-                this.majCharts();
-                this.currentPage = 1;
-                this.currentPageFiltered = 1;
+                return date >= debut &&
+                       date <= fin &&
+                       filtres.voies.includes(ex.voie) &&
+                       filtres.categories.includes(ex.categorie) &&
+                       filtres.conducteurs.includes(ex.matricule + ' ' + ex.nom);
             });
 
-            // Écouter le chargement initial des données
-            window.addEventListener('statistiques-donnees-chargees', () => {
-                this.majCharts();
-            });
+            // Filtre supplémentaire : seulement les non exclus ?
+            if (onlyNonExclus) {
+                exces = exces.filter(ex => !this.regleExclu(ex));
+            }
+
+            // Optionnel : tri par date descendant
+            return exces.sort((a, b) => new Date(b.ladate) - new Date(a.ladate));
         },
 
+        // ─── Logique exclusion (à adapter selon votre règle réelle) ───
+        regleExclu(exces) {
+            // Exemple : à remplacer par votre vraie logique
+            return exces.autorise && (exces.vitesse || 0) <= (exces.autorise * 1.05); // tolérance 5% par ex.
+        },
+
+        // ─── Gestion des graphiques ───────────────────────────────────
         initCharts() {
-            // Chart pour tous les excès
-            const ctx = document.getElementById('evolutionChart');
-            if (ctx) {
-                this.chart = new Chart(ctx.getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        labels: [],
-                        datasets: [
-                            {
-                                label: 'Excès mineur',
-                                data: [],
-                                backgroundColor: 'rgba(75, 192, 40, 0.2)',
-                                borderColor: 'rgba(75, 192, 40, 1)',
-                                borderWidth: 2,
-                                tension: 0.1,
-                                fill: false
-                            },
-                            {
-                                label: 'Excès moyen',
-                                data: [],
-                                backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                                borderColor: 'rgba(255, 206, 86, 1)',
-                                borderWidth: 2,
-                                tension: 0.1,
-                                fill: false
-                            },
-                            {
-                                label: 'Excès grave',
-                                data: [],
-                                backgroundColor: 'rgba(200, 50, 0, 0.2)',
-                                borderColor: 'rgba(200, 50, 0, 1)',
-                                borderWidth: 2,
-                                tension: 0.1,
-                                fill: false
-                            },
-                            {
-                                label: 'Excès majeur',
-                                data: [],
-                                backgroundColor: 'rgba(255, 50, 50, 0.2)',
-                                borderColor: 'rgba(255, 50, 50, 1)',
-                                borderWidth: 2,
-                                tension: 0.1,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    precision: 0
-                                }
-                            }
-                        }
-                    }
-                });
-            }
+            this.initChart('evolutionChart', this.prepareDataForChart(this.excesFiltrees));
+            this.initChart('evolutionFilteredChart', this.prepareDataForChart(this.excesNonExclus));
+        },
 
-            // Chart pour les excès non exclus
-            const ctxFiltered = document.getElementById('evolutionFilteredChart');
-            if (ctxFiltered) {
-                this.chartFiltered = new Chart(ctxFiltered.getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        labels: [],
-                        datasets: [
-                            {
-                                label: 'Excès mineur',
-                                data: [],
-                                backgroundColor: 'rgba(75, 192, 40, 0.2)',
-                                borderColor: 'rgba(75, 192, 40, 1)',
-                                borderWidth: 2,
-                                tension: 0.1,
-                                fill: false
-                            },
-                            {
-                                label: 'Excès moyen',
-                                data: [],
-                                backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                                borderColor: 'rgba(255, 206, 86, 1)',
-                                borderWidth: 2,
-                                tension: 0.1,
-                                fill: false
-                            },
-                            {
-                                label: 'Excès grave',
-                                data: [],
-                                backgroundColor: 'rgba(200, 50, 0, 0.2)',
-                                borderColor: 'rgba(200, 50, 0, 1)',
-                                borderWidth: 2,
-                                tension: 0.1,
-                                fill: false
-                            },
-                            {
-                                label: 'Excès majeur',
-                                data: [],
-                                backgroundColor: 'rgba(255, 50, 50, 0.2)',
-                                borderColor: 'rgba(255, 50, 50, 1)',
-                                borderWidth: 2,
-                                tension: 0.1,
-                                fill: false
-                            }
-                        ]
+        initChart(canvasId, chartData) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            // Destruction propre de l'ancien graphique
+            const existing = Chart.getChart(canvas);
+            if (existing) existing.destroy();
+
+            const ctx = canvas.getContext('2d');
+
+            const chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: "Nombre d'excès" } }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    precision: 0
-                                }
-                            }
-                        }
+                    plugins: {
+                        legend: { display: false }
                     }
-                });
+                }
+            });
+
+            if (canvasId === 'evolutionChart') {
+                this.chart = chartInstance;
+            } else {
+                this.filteredChart = chartInstance;
             }
         },
 
-        majCharts() {
-            // Préparer les données par date
-            const dates = [...new Set(this.excesFiltres.map(e => e.ladate))].sort();
-            const datesFiltered = [...new Set(this.excesFiltresNonExclus.map(e => e.ladate))].sort();
+        prepareDataForChart(excesList) {
+            // Compter par catégorie
+            const counts = {
+                mineur: 0,
+                moyen: 0,
+                grave: 0,
+                majeur: 0
+            };
 
-            // Données pour tous les excès
-            const dataMineur = dates.map(date =>
-                this.excesFiltres.filter(e => e.ladate === date && e.categorie === 'mineur').length
-            );
-            const dataMoyen = dates.map(date =>
-                this.excesFiltres.filter(e => e.ladate === date && e.categorie === 'moyen').length
-            );
-            const dataGrave = dates.map(date =>
-                this.excesFiltres.filter(e => e.ladate === date && e.categorie === 'grave').length
-            );
-            const dataMajeur = dates.map(date =>
-                this.excesFiltres.filter(e => e.ladate === date && e.categorie === 'majeur').length
-            );
+            excesList.forEach(ex => {
+                if (counts.hasOwnProperty(ex.categorie)) {
+                    counts[ex.categorie]++;
+                }
+            });
 
-            // Données pour les excès non exclus
-            const dataMineurFiltered = datesFiltered.map(date =>
-                this.excesFiltresNonExclus.filter(e => e.ladate === date && e.categorie === 'mineur').length
-            );
-            const dataMoyenFiltered = datesFiltered.map(date =>
-                this.excesFiltresNonExclus.filter(e => e.ladate === date && e.categorie === 'moyen').length
-            );
-            const dataGraveFiltered = datesFiltered.map(date =>
-                this.excesFiltresNonExclus.filter(e => e.ladate === date && e.categorie === 'grave').length
-            );
-            const dataMajeurFiltered = datesFiltered.map(date =>
-                this.excesFiltresNonExclus.filter(e => e.ladate === date && e.categorie === 'majeur').length
-            );
+            return {
+                labels: ['Mineur', 'Moyen', 'Grave', 'Majeur'],
+                datasets: [{
+                    label: 'Nombre d\'excès',
+                    data: [counts.mineur, counts.moyen, counts.grave, counts.majeur],
+                    backgroundColor: [
+                        'rgba(75,192,40,0.8)',
+                        'rgba(255,206,86,0.8)',
+                        'rgba(200,50,0,0.8)',
+                        'rgba(255,50,50,0.8)'
+                    ],
+                    borderColor: [
+                        '#4bc028',
+                        '#ffce56',
+                        '#c83200',
+                        '#ff3232'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+        },
 
-            // Mettre à jour les charts
-            if (this.chart) {
-                this.chart.data.labels = dates.map(d => this.formatDate(d));
-                this.chart.data.datasets[0].data = dataMineur;
-                this.chart.data.datasets[1].data = dataMoyen;
-                this.chart.data.datasets[2].data = dataGrave;
-                this.chart.data.datasets[3].data = dataMajeur;
-                this.chart.update();
-            }
-
-            if (this.chartFiltered) {
-                this.chartFiltered.data.labels = datesFiltered.map(d => this.formatDate(d));
-                this.chartFiltered.data.datasets[0].data = dataMineurFiltered;
-                this.chartFiltered.data.datasets[1].data = dataMoyenFiltered;
-                this.chartFiltered.data.datasets[2].data = dataGraveFiltered;
-                this.chartFiltered.data.datasets[3].data = dataMajeurFiltered;
-                this.chartFiltered.update();
-            }
+        // Utilitaires
+        formatDate(dateStr) {
+            return this.store?.formatDateAffichage?.(dateStr) || dateStr;
         },
 
         ouvrirCourse(idcourse) {
-            window.open(`/lacourse?id=${idcourse}`, '_blank');
-        },
-
-        formatDate(dateStr) {
-            return $store.statistiques.formatDateAffichage(dateStr);
+            if (idcourse && this.store?.ouvrirCourse) {
+                this.store.ouvrirCourse(idcourse);
+            }
         }
     }
 }

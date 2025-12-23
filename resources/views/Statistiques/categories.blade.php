@@ -124,20 +124,25 @@
 
 @push('scripts')
 <script>
+    function debounce(func, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
     function repartitionCategories() {
         return {
             chart: null,
+            updateChart: null,
 
             // Propriétés calculées
             get donneesFiltrees() {
-                // CORRECTION ICI : Utiliser Alpine.store() au lieu de $store
                 const store = Alpine.store('statistiques');
-
-                // Sécurité : si le store n'est pas encore prêt
                 if (!store || !store.donnees || !store.donnees.exces) {
                     return { exces: [], courses: [] };
                 }
-
                 const filtres = store.filtres;
                 const donnees = store.donnees;
 
@@ -228,22 +233,42 @@
 
             // Méthodes
             init() {
-                this.initChart();
+                this.updateChart = debounce(this.majChart.bind(this), 200);
+
+                // Appel initial
+                this.updateChart();
 
                 // Écouter les changements de filtres
                 window.addEventListener('statistiques-filtres-appliques', () => {
-                    this.majChart();
+                    this.updateChart();
                 });
 
                 // Écouter le chargement initial des données
                 window.addEventListener('statistiques-donnees-chargees', () => {
-                    this.majChart();
+                    this.updateChart();
                 });
+
+                // Cleanup
+
             },
 
             initChart() {
                 const canvas = document.getElementById('excesChart');
-                if (!canvas) return; // Sécurité si le canvas n'est pas encore là
+                if (!canvas) {
+                    console.warn('Canvas #excesChart not found yet');
+                    setTimeout(() => this.initChart(), 100);
+                    return;
+                }
+
+                const existingChart = Chart.getChart(canvas);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+
+                if (this.chart) {
+                    this.chart.destroy();
+                    this.chart = null;
+                }
 
                 const ctx = canvas.getContext('2d');
 
@@ -278,9 +303,7 @@
                                 labels: {
                                     padding: 20,
                                     usePointStyle: true,
-                                    font: {
-                                        size: 11
-                                    }
+                                    font: { size: 11 }
                                 }
                             },
                             tooltip: {
@@ -300,19 +323,45 @@
             },
 
             majChart() {
-                if (this.chart) {
+                console.log('majchart called');
+
+                if (this.totalExces === 0) {
+                    if (this.chart) {
+                        this.chart.destroy();
+                        this.chart = null;
+                    }
+                    return;
+                }
+
+                if (!this.chart || !Chart.getChart(this.chart.canvas)) {
+                    console.warn('Chart instance no longer valid → recreating');
+                    this.initChart();
+                    return;
+                }
+
+                try {
                     this.chart.data.datasets[0].data = [
-                        this.nbmineur,
-                        this.nbmoyen,
-                        this.nbgrave,
-                        this.nbmajeur
+                        this.nbmineur || 0,
+                        this.nbmoyen || 0,
+                        this.nbgrave || 0,
+                        this.nbmajeur || 0
                     ];
-                    this.chart.update();
+
+                    this.chart.data.labels = [
+                        `Excès mineur (${this.pcmineur}%)`,
+                        `Excès moyen (${this.pcmoyen}%)`,
+                        `Excès grave (${this.pcgrave}%)`,
+                        `Excès majeur (${this.pcmajeur}%)`
+                    ];
+
+                    this.chart.update('none');
+                } catch (err) {
+                    console.error('Error during chart update, forcing recreation:', err);
+                    this.initChart();
                 }
             },
 
             formatDate(dateStr) {
-                // CORRECTION ICI : Utiliser Alpine.store()
                 return Alpine.store('statistiques').formatDateAffichage(dateStr);
             }
         }
