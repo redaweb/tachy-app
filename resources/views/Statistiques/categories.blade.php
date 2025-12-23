@@ -124,191 +124,199 @@
 
 @push('scripts')
 <script>
-function repartitionCategories() {
-    return {
-        chart: null,
+    function repartitionCategories() {
+        return {
+            chart: null,
 
-        // Propriétés calculées
-        get donneesFiltrees() {
-            const filtres = $store.statistiques.filtres;
-            const donnees = $store.statistiques.donnees;
+            // Propriétés calculées
+            get donneesFiltrees() {
+                // CORRECTION ICI : Utiliser Alpine.store() au lieu de $store
+                const store = Alpine.store('statistiques');
 
-            if (!donnees.exces || !donnees.courses) {
-                return { exces: [], courses: [] };
-            }
+                // Sécurité : si le store n'est pas encore prêt
+                if (!store || !store.donnees || !store.donnees.exces) {
+                    return { exces: [], courses: [] };
+                }
 
-            const excesFiltres = donnees.exces.filter(exce => {
-                const dateExce = new Date(exce.ladate);
-                const dateDebut = new Date(filtres.debut);
-                const dateFin = new Date(filtres.fin);
+                const filtres = store.filtres;
+                const donnees = store.donnees;
 
-                return dateExce >= dateDebut &&
-                       dateExce <= dateFin &&
-                       filtres.voies.includes(exce.voie) &&
-                       filtres.categories.includes(exce.categorie) &&
-                       filtres.conducteurs.includes(exce.matricule + ' ' + exce.nom);
-            });
+                const excesFiltres = donnees.exces.filter(exce => {
+                    const dateExce = new Date(exce.ladate);
+                    const dateDebut = new Date(filtres.debut);
+                    const dateFin = new Date(filtres.fin);
 
-            const coursesFiltrees = donnees.courses.filter(course => {
-                const dateCourse = new Date(course.ladate);
-                const dateDebut = new Date(filtres.debut);
-                const dateFin = new Date(filtres.fin);
+                    return dateExce >= dateDebut &&
+                           dateExce <= dateFin &&
+                           filtres.voies.includes(exce.voie) &&
+                           filtres.categories.includes(exce.categorie) &&
+                           filtres.conducteurs.includes(exce.matricule + ' ' + exce.nom);
+                });
 
-                return dateCourse >= dateDebut &&
-                       dateCourse <= dateFin &&
-                       filtres.voies.includes(course.voie) &&
-                       filtres.conducteurs.includes(course.matricule + ' ' + course.nom);
-            });
+                const coursesFiltrees = donnees.courses.filter(course => {
+                    const dateCourse = new Date(course.ladate);
+                    const dateDebut = new Date(filtres.debut);
+                    const dateFin = new Date(filtres.fin);
 
-            return { exces: excesFiltres, courses: coursesFiltrees };
-        },
+                    return dateCourse >= dateDebut &&
+                           dateCourse <= dateFin &&
+                           filtres.voies.includes(course.voie) &&
+                           filtres.conducteurs.includes(course.matricule + ' ' + course.nom);
+                });
 
-        get totalExces() {
-            return this.donneesFiltrees.exces.length;
-        },
+                return { exces: excesFiltres, courses: coursesFiltrees };
+            },
 
-        get nbmineur() {
-            return this.donneesFiltrees.exces.filter(e => e.categorie === 'mineur').length;
-        },
+            get totalExces() {
+                return this.donneesFiltrees.exces.length;
+            },
 
-        get pcmineur() {
-            return this.totalExces > 0 ? ((this.nbmineur / this.totalExces) * 100).toFixed(1) : '0.0';
-        },
+            get nbmineur() {
+                return this.donneesFiltrees.exces.filter(e => e.categorie === 'mineur').length;
+            },
 
-        get nbmoyen() {
-            return this.donneesFiltrees.exces.filter(e => e.categorie === 'moyen').length;
-        },
+            get pcmineur() {
+                return this.totalExces > 0 ? ((this.nbmineur / this.totalExces) * 100).toFixed(1) : '0.0';
+            },
 
-        get pcmoyen() {
-            return this.totalExces > 0 ? ((this.nbmoyen / this.totalExces) * 100).toFixed(1) : '0.0';
-        },
+            get nbmoyen() {
+                return this.donneesFiltrees.exces.filter(e => e.categorie === 'moyen').length;
+            },
 
-        get nbgrave() {
-            return this.donneesFiltrees.exces.filter(e => e.categorie === 'grave').length;
-        },
+            get pcmoyen() {
+                return this.totalExces > 0 ? ((this.nbmoyen / this.totalExces) * 100).toFixed(1) : '0.0';
+            },
 
-        get pcgrave() {
-            return this.totalExces > 0 ? ((this.nbgrave / this.totalExces) * 100).toFixed(1) : '0.0';
-        },
+            get nbgrave() {
+                return this.donneesFiltrees.exces.filter(e => e.categorie === 'grave').length;
+            },
 
-        get nbmajeur() {
-            return this.donneesFiltrees.exces.filter(e => e.categorie === 'majeur').length;
-        },
+            get pcgrave() {
+                return this.totalExces > 0 ? ((this.nbgrave / this.totalExces) * 100).toFixed(1) : '0.0';
+            },
 
-        get pcmajeur() {
-            return this.totalExces > 0 ? ((this.nbmajeur / this.totalExces) * 100).toFixed(1) : '0.0';
-        },
+            get nbmajeur() {
+                return this.donneesFiltrees.exces.filter(e => e.categorie === 'majeur').length;
+            },
 
-        get nbtotal() {
-            return this.donneesFiltrees.courses.length;
-        },
+            get pcmajeur() {
+                return this.totalExces > 0 ? ((this.nbmajeur / this.totalExces) * 100).toFixed(1) : '0.0';
+            },
 
-        get nbcdr() {
-            const conducteurs = new Set(this.donneesFiltrees.courses.map(c => c.matricule));
-            return conducteurs.size;
-        },
+            get nbtotal() {
+                return this.donneesFiltrees.courses.length;
+            },
 
-        get KMV1() {
-            const coursesV1 = this.donneesFiltrees.courses.filter(c => c.voie === 'V1');
-            return coursesV1.reduce((total, c) => total + (c.discom || 0), 0);
-        },
+            get nbcdr() {
+                const conducteurs = new Set(this.donneesFiltrees.courses.map(c => c.matricule));
+                return conducteurs.size;
+            },
 
-        get KMV2() {
-            const coursesV2 = this.donneesFiltrees.courses.filter(c => c.voie === 'V2');
-            return coursesV2.reduce((total, c) => total + (c.discom || 0), 0);
-        },
+            get KMV1() {
+                const coursesV1 = this.donneesFiltrees.courses.filter(c => c.voie === 'V1');
+                return coursesV1.reduce((total, c) => total + (c.discom || 0), 0);
+            },
 
-        get KM() {
-            return this.KMV1 + this.KMV2;
-        },
+            get KMV2() {
+                const coursesV2 = this.donneesFiltrees.courses.filter(c => c.voie === 'V2');
+                return coursesV2.reduce((total, c) => total + (c.discom || 0), 0);
+            },
 
-        // Méthodes
-        init() {
-            this.initChart();
+            get KM() {
+                return this.KMV1 + this.KMV2;
+            },
 
-            // Écouter les changements de filtres
-            window.addEventListener('statistiques-filtres-appliques', () => {
-                this.majChart();
-            });
+            // Méthodes
+            init() {
+                this.initChart();
 
-            // Écouter le chargement initial des données
-            window.addEventListener('statistiques-donnees-chargees', () => {
-                this.majChart();
-            });
-        },
+                // Écouter les changements de filtres
+                window.addEventListener('statistiques-filtres-appliques', () => {
+                    this.majChart();
+                });
 
-        initChart() {
-            const ctx = document.getElementById('excesChart').getContext('2d');
+                // Écouter le chargement initial des données
+                window.addEventListener('statistiques-donnees-chargees', () => {
+                    this.majChart();
+                });
+            },
 
-            this.chart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Excès mineur', 'Excès moyen', 'Excès grave', 'Excès majeur'],
-                    datasets: [{
-                        data: [this.nbmineur, this.nbmoyen, this.nbgrave, this.nbmajeur],
-                        backgroundColor: [
-                            'rgba(75, 192, 40, 0.8)',
-                            'rgba(255, 206, 86, 0.8)',
-                            'rgba(200, 50, 0, 0.8)',
-                            'rgba(255, 50, 50, 0.8)'
-                        ],
-                        borderColor: [
-                            'rgba(75, 192, 40, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(200, 50, 0, 1)',
-                            'rgba(255, 50, 50, 1)'
-                        ],
-                        borderWidth: 1,
-                        hoverOffset: 15
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true,
-                                font: {
-                                    size: 11
+            initChart() {
+                const canvas = document.getElementById('excesChart');
+                if (!canvas) return; // Sécurité si le canvas n'est pas encore là
+
+                const ctx = canvas.getContext('2d');
+
+                this.chart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Excès mineur', 'Excès moyen', 'Excès grave', 'Excès majeur'],
+                        datasets: [{
+                            data: [this.nbmineur, this.nbmoyen, this.nbgrave, this.nbmajeur],
+                            backgroundColor: [
+                                'rgba(75, 192, 40, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(200, 50, 0, 0.8)',
+                                'rgba(255, 50, 50, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(75, 192, 40, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(200, 50, 0, 1)',
+                                'rgba(255, 50, 50, 1)'
+                            ],
+                            borderWidth: 1,
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    font: {
+                                        size: 11
+                                    }
                                 }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                    return `${label}: ${value} (${percentage}%)`;
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
                                 }
                             }
                         }
                     }
+                });
+            },
+
+            majChart() {
+                if (this.chart) {
+                    this.chart.data.datasets[0].data = [
+                        this.nbmineur,
+                        this.nbmoyen,
+                        this.nbgrave,
+                        this.nbmajeur
+                    ];
+                    this.chart.update();
                 }
-            });
-        },
+            },
 
-        majChart() {
-            if (this.chart) {
-                this.chart.data.datasets[0].data = [
-                    this.nbmineur,
-                    this.nbmoyen,
-                    this.nbgrave,
-                    this.nbmajeur
-                ];
-                this.chart.update();
+            formatDate(dateStr) {
+                // CORRECTION ICI : Utiliser Alpine.store()
+                return Alpine.store('statistiques').formatDateAffichage(dateStr);
             }
-        },
-
-        formatDate(dateStr) {
-            return $store.statistiques.formatDateAffichage(dateStr);
         }
     }
-}
-</script>
+    </script>
 @endpush
 @endsection

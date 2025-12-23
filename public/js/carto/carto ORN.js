@@ -377,7 +377,7 @@ listeInter:[
 initCarto: function(canvas, interstationsData) {
     const ctx = canvas.getContext('2d');
     const img = new Image();
-    img.src = '/images/lignes/ligne-ORN.png';
+    img.src = '/images/lignes/ligne ORN.png';
 
     return new Promise((resolve, reject) => {
         img.onload = () => {

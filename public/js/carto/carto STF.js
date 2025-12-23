@@ -322,7 +322,7 @@ listeInter:[
 initCarto: function(canvas, interstationsData) {
     const ctx = canvas.getContext('2d');
     const img = new Image();
-    img.src = '/images/lignes/ligne-ORN.png';
+    img.src = '/images/lignes/ligne STF.png';
 
     return new Promise((resolve, reject) => {
         img.onload = () => {
@@ -331,7 +331,7 @@ initCarto: function(canvas, interstationsData) {
         };
 
         img.onerror = () => {
-            console.error('Erreur de chargement de l\'image de la ligne ORN');
+            console.error('Erreur de chargement de l\'image de la ligne STF');
             reject();
         };
     });

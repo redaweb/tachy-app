@@ -176,12 +176,10 @@
 @endpush
 
 @push('scripts')
-<!-- Charger le manager de carto -->
-<script src="{{ asset('js/carto/carto-manager.js') }}"></script>
 
 <!-- Charger la carto spécifique au site -->
-@if(file_exists(public_path('js/carto/carto-' . strtolower($site) . '.js')))
-<script src="{{ asset('js/carto/carto-' . strtolower($site) . '.js') }}"></script>
+@if(file_exists(public_path('js/carto/carto ' . $site .'.js')))
+<script src="{{ asset('js/carto/carto ' . $site .'.js') }}"></script>
 @endif
 
 <script>

@@ -45,7 +45,7 @@
                 </div>
                 <div class="card-body">
                     <form action="{{ route('enveloppes.store') }}" method="POST" enctype="multipart/form-data" id="enveloppe-form">
-                        @csrf
+                @csrf
                         <div class="row g-3">
                             <div class="col-md-3">
                                 <label for="debut" class="form-label">Terminus de départ <span class="text-danger">*</span></label>
@@ -69,7 +69,7 @@
                                     <option value="">Sélectionner...</option>
                                     <option value="V1" {{ old('voie') == 'V1' ? 'selected' : '' }}>V1</option>
                                     <option value="V2" {{ old('voie') == 'V2' ? 'selected' : '' }}>V2</option>
-                                </select>
+                </select>
                                 @error('voie')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -127,21 +127,21 @@
                 @else
                     <div class="table-responsive">
                         <table id="enveloppes-table" class="table table-striped table-bordered table-hover">
-                            <thead>
+            <thead>
                                 <tr>
-                                    <th>Nom</th>
-                                    <th>Date d'importation</th>
-                                    <th>Terminus de départ</th>
-                                    <th>Terminus d'arrivée</th>
-                                    <th>Voie</th>
+                    <th>Nom</th>
+                    <th>Date d'importation</th>
+                    <th>Terminus de départ</th>
+                    <th>Terminus d'arrivée</th>
+                    <th>Voie</th>
                                     <th>Distance commerciale (m)</th>
                                     @if(session('profil') == 'ADMIN' || session('profil') == 'ladmin' && !$envBloque)
-                                        <th>Archiver</th>
-                                    @endif
+                        <th>Archiver</th>
+                    @endif
                                     <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                </tr>
+            </thead>
+            <tbody>
                                 @foreach($enveloppes as $enveloppe)
                                     <tr data-figer="{{ $enveloppe->figer ? '1' : '0' }}">
                                         <td>{{ $enveloppe->nom }}</td>
@@ -162,9 +162,9 @@
                                                            role="switch"
                                                            aria-label="Archiver l'enveloppe">
                                                 </div>
-                                            </td>
-                                        @endif
-                                        <td>
+                            </td>
+                        @endif
+                        <td>
                                             <div class="btn-group" role="group">
                                                 <button type="button"
                                                         class="btn btn-sm btn-info view-enveloppe"
@@ -182,17 +182,17 @@
                                                     </button>
                                                 @endif
                                             </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                            </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
                 @endif
             </div>
         </div>
     </div>
-</div>
+    </div>
 
 {{-- Modals --}}
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
@@ -219,7 +219,7 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
 
 <div class="modal fade" id="viewEnveloppeModal" tabindex="-1" aria-labelledby="viewEnveloppeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -233,14 +233,14 @@
             <div class="modal-body">
                 <div class="table-responsive">
                     <table class="table table-striped table-bordered">
-                        <thead>
+            <thead>
                             <tr>
-                                <th>Libellé</th>
-                                <th>Distance</th>
-                                <th>Vitesse max</th>
-                                <th>Station</th>
-                            </tr>
-                        </thead>
+                    <th>Libellé</th>
+                    <th>Distance</th>
+                    <th>Vitesse max</th>
+                    <th>Station</th>
+                </tr>
+            </thead>
                         <tbody id="enveloppe-content">
                             <tr>
                                 <td colspan="4" class="text-center">
@@ -250,7 +250,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+        </table>
                 </div>
             </div>
             <div class="modal-footer">
@@ -258,7 +258,7 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
 @endsection
 
 @push('styles')
@@ -454,7 +454,7 @@
                 },
                 error: function() {
                     alert('Une erreur est survenue lors de la suppression.');
-                }
+    }
             });
         });
     });

@@ -54,164 +54,117 @@ class StatistiqueController extends Controller
     // API pour les données d'excès (avec filtres)
     public function apiExces(Request $request)
     {
-        $site = session('site');
+        $site = session('site', 'ALG');
 
-        // Requête de base pour les excès
-        $queryExces = Exces::select(
-                'exces.*',
-                'courses.ladate',
-                'courses.voie',
-                'courses.RAME',
-                'courses.code',
-                'conducteurs.nom',
-                'conducteurs.prenom'
-            )
-            ->join('courses', 'exces.idcourse', '=', 'courses.idcourse')
-            ->join('conducteurs', 'courses.matricule', '=', 'conducteurs.matricule')
-            ->where('courses.site', $site)
-            ->where('courses.valide', true);
+        try {
+            // Requête de base pour les excès (jointure + colonnes nécessaires)
+            $queryExces = Exces::select(
+                    'exces.idexce',
+                    'exces.idcourse',
+                    'exces.categorie',
+                    'exces.interstation',
+                    'exces.debut',
+                    'exces.fin',
+                    'exces.detail',
+                    'exces.aire',
+                    'exces.maxx',
+                    'exces.autorise',
+                    'courses.ladate',
+                    'courses.code',
+                    'courses.matricule',
+                    'enveloppe.voie as voie_enveloppe',
+                    'conducteurs.nom',
+                    'conducteurs.prenom'
+                )
+                ->join('courses', 'exces.idcourse', '=', 'courses.idcourse')
+                ->leftJoin('enveloppe', 'courses.idenveloppe', '=', 'enveloppe.idenveloppe')
+                ->leftJoin('conducteurs', 'courses.matricule', '=', 'conducteurs.matricule')
+                ->where('courses.site', $site)
+                ->where('courses.valide', true);
 
-        // Requête de base pour les courses
-        $queryCourses = Course::with('conducteur')
-            ->where('site', $site)
-            ->where('valide', true);
+            // Requête de base pour les courses
+            $queryCourses = Course::select(
+                    'courses.*',
+                    'enveloppe.voie as voie_enveloppe'
+                )
+                ->leftJoin('enveloppe', 'courses.idenveloppe', '=', 'enveloppe.idenveloppe')
+                ->with('conducteur')
+                ->where('courses.site', $site)
+                ->where('courses.valide', true);
 
-        // Appliquer les filtres de date
-        if ($request->has('debut') && $request->has('fin')) {
-            $debut = Carbon::createFromFormat('d/m/Y', $request->debut)->startOfDay();
-            $fin = Carbon::createFromFormat('d/m/Y', $request->fin)->endOfDay();
+            // Appliquer les filtres de date
+            if ($request->has('debut') && $request->has('fin')) {
+                $debut = Carbon::createFromFormat('d/m/Y', $request->debut)->startOfDay();
+                $fin = Carbon::createFromFormat('d/m/Y', $request->fin)->endOfDay();
 
-            $queryExces->whereBetween('courses.ladate', [$debut, $fin]);
-            $queryCourses->whereBetween('ladate', [$debut, $fin]);
-        }
+                $queryExces->whereBetween('courses.ladate', [$debut, $fin]);
+                $queryCourses->whereBetween('ladate', [$debut, $fin]);
+            }
 
-        $exces = $queryExces->get()->map(function ($exce) {
-            return [
-                'id' => $exce->idexces,
-                'idcourse' => $exce->idcourse,
-                'ladate' => $exce->ladate,
-                'categorie' => $exce->categorie,
-                'voie' => $exce->voie,
-                'distance' => $exce->fin - $exce->debut,
-                'matricule' => $exce->conducteur->matricule,
-                'nom' => $exce->conducteur->nom . ' ' . $exce->conducteur->prenom,
-                'interstation' => $exce->interstation,
-                'code' => str_pad($exce->code, 4, '0', STR_PAD_LEFT),
-                'detail' => $exce->detail,
-                'aire' => $exce->aire,
-                'max' => $exce->maxx,
-                'RAME' => $exce->RAME,
-                'autorise' => $exce->autorise,
-                'debut' => $exce->debut,
-                'fin' => $exce->fin
-            ];
-        });
+            $exces = $queryExces->get()->map(function ($exce) {
+                $nomComplet = trim(($exce->nom ?? '') . ' ' . ($exce->prenom ?? ''));
 
-        $courses = $queryCourses->get()->map(function ($course) {
-            return [
-                'idcourse' => $course->idcourse,
-                'ladate' => $course->ladate,
-                'voie' => $course->voie,
-                'matricule' => $course->matricule,
-                'nom' => $course->conducteur->nom . ' ' . $course->conducteur->prenom,
-                'fichier' => $course->fichier,
-                'heure' => $course->heure,
-                'debut' => $course->debut,
-                'fin' => $course->fin,
-                'code' => str_pad($course->code, 4, '0', STR_PAD_LEFT),
-                'discom' => $course->dis_com,
-                'rame' => $course->RAME,
-                'FU' => $course->FU,
-                'klaxon' => $course->klaxon,
-                'patin' => $course->patin,
-                'gong' => $course->gong,
-                'SA' => $course->SA,
-                'SV' => $course->SV
-            ];
-        });
-
-        return response()->json([
-            'exces' => $exces,
-            'courses' => $courses
-        ]);
-    }
-
-    // API pour tous les excès (sans filtre valide)
-    public function apiExcesTous(Request $request)
-    {
-        $site = session('site');
-
-        $exces = Exces::select(
-                'exces.*',
-                'courses.ladate',
-                'courses.voie',
-                'courses.RAME',
-                'courses.code',
-                'courses.valide as enregistre',
-                'conducteurs.nom',
-                'conducteurs.prenom'
-            )
-            ->join('courses', 'exces.idcourse', '=', 'courses.idcourse')
-            ->join('conducteurs', 'courses.matricule', '=', 'conducteurs.matricule')
-            ->where('courses.site', $site)
-            ->get()
-            ->map(function ($exce) {
                 return [
-                    'id' => $exce->idexces,
+                    'id' => $exce->idexce,
                     'idcourse' => $exce->idcourse,
                     'ladate' => $exce->ladate,
                     'categorie' => $exce->categorie,
-                    'voie' => $exce->voie,
-                    'matricule' => $exce->conducteur->matricule,
-                    'nom' => $exce->conducteur->nom . ' ' . $exce->conducteur->prenom,
+                    'voie' => $exce->voie_enveloppe,
+                    'distance' => $exce->fin - $exce->debut,
+                    'matricule' => $exce->matricule,
+                    'nom' => $nomComplet,
                     'interstation' => $exce->interstation,
-                    'code' => str_pad($exce->code, 4, '0', STR_PAD_LEFT),
+                    'code' => $exce->code !== null ? str_pad($exce->code, 4, '0', STR_PAD_LEFT) : null,
                     'detail' => $exce->detail,
-                    'enregistre' => $exce->enregistre,
-                    'commentaire' => $exce->commentaire,
                     'aire' => $exce->aire,
                     'max' => $exce->maxx,
                     'RAME' => $exce->RAME,
-                    'autorise' => $exce->autorise
+                    'autorise' => $exce->autorise,
+                    'debut' => $exce->debut,
+                    'fin' => $exce->fin
                 ];
             });
 
-        return response()->json([
-            'exces' => $exces
-        ]);
-    }
+            $courses = $queryCourses->get()->map(function ($course) {
+                $nomComplet = $course->conducteur
+                    ? trim(($course->conducteur->nom ?? '') . ' ' . ($course->conducteur->prenom ?? ''))
+                    : '';
 
-    // API pour le journal d'activités
-    public function apiJournal(Request $request)
-    {
-        $query = LogActivity::query();
-
-        if ($request->has('debut') && $request->has('fin')) {
-            $debut = Carbon::parse($request->debut)->startOfDay();
-            $fin = Carbon::parse($request->fin)->endOfDay();
-            $query->whereBetween('created_at', [$debut, $fin]);
-        }
-
-        $logs = $query->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($log) {
                 return [
-                    'id' => $log->id,
-                    'date' => $log->created_at->format('Y-m-d'),
-                    'heure' => $log->created_at->format('H:i:s'),
-                    'utilisateur' => $log->user->name ?? 'Inconnu',
-                    'matricule' => $log->user->matricule ?? '',
-                    'action' => $log->action,
-                    'type' => $log->type,
-                    'details' => $log->details,
-                    'module' => $log->module
+                    'idcourse' => $course->idcourse,
+                    'ladate' => $course->ladate,
+                    'voie' => $course->voie_enveloppe,
+                    'matricule' => $course->matricule,
+                    'nom' => $nomComplet,
+                    'fichier' => $course->fichier,
+                    'heure' => $course->heure,
+                    'debut' => $course->debut,
+                    'fin' => $course->fin,
+                    'code' => $course->code !== null ? str_pad($course->code, 4, '0', STR_PAD_LEFT) : null,
+                    'discom' => $course->dis_com,
+                    'rame' => $course->RAME,
+                    'FU' => $course->FU,
+                    'klaxon' => $course->klaxon,
+                    'patin' => $course->patin,
+                    'gong' => $course->gong,
+                    'SA' => $course->SA,
+                    'SV' => $course->SV
                 ];
             });
 
-        return response()->json([
-            'logs' => $logs
-        ]);
+            return response()->json([
+                'exces' => $exces,
+                'courses' => $courses
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Erreur lors du chargement des données',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
     }
+
+
 
     // Export CSV
     public function exportCSV(Request $request)

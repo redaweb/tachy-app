@@ -59,13 +59,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('conducteurs', [StatistiqueController::class, 'conducteurs'])->name('conducteurs');
         Route::get('interstations', [StatistiqueController::class, 'interstations'])->name('interstations');
         Route::get('mensuelle', [StatistiqueController::class, 'mensuelle'])->name('mensuelle');
-        Route::get('tous-exces', [StatistiqueController::class, 'tousExces'])->name('tous-exces');
-        Route::get('journal', [StatistiqueController::class, 'journal'])->name('journal');
 
         // API endpoints
         Route::get('api/exces', [StatistiqueController::class, 'apiExces'])->name('api.exces');
-        Route::get('api/exces-tous', [StatistiqueController::class, 'apiExcesTous'])->name('api.exces-tous');
-        Route::get('api/journal', [StatistiqueController::class, 'apiJournal'])->name('api.journal');
         Route::get('export-csv', [StatistiqueController::class, 'exportCSV'])->name('export-csv');
     });
 

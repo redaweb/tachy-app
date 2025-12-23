@@ -21,10 +21,11 @@
     }
 
     .statistiques-content {
-        flex: 1;
+        flex: 1;                 /* PREND TOUT L’ESPACE RESTANT */
         padding: 20px;
-        overflow-x: auto;
+        overflow-x: hidden;
     }
+
 
     .chart-container {
         position: relative;
@@ -72,29 +73,103 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 1060;
+        z-index: 1040;
+    }
+
+    /* Ajouté pour modaux Alpine */
+    [x-cloak] {
+        display: none !important;
+    }
+
+    /* styles pour le modal Alpine */
+    .modal-alpine-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999; /* Augmenté */
+    }
+
+    .modal-alpine {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        border-radius: 0.3rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 10000; /* Augmenté */
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-alpine .modal-header {
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .modal-alpine .modal-body {
+        padding: 1rem;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .modal-alpine .modal-footer {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* S'assurer que le modal est au-dessus de tout */
+    .modal-alpine-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 </style>
 @endsection
 
 @section('content')
 <div class="statistiques-container">
-    <!-- Barre latérale des filtres -->
-    <div class="filtres-sidebar">
+
+    <!-- Sidebar filtres -->
+    <aside class="filtres-sidebar">
         @include('statistiques.partials.filtres')
-    </div>
+    </aside>
 
     <!-- Contenu principal -->
-    <div class="statistiques-content">
+    <main class="statistiques-content">
         @yield('statistiques-content')
-    </div>
+    </main>
+
 </div>
+
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+{{-- Bootstrap DOIT être avant Alpine --}}
+<script src="/js/bootstrap.js"></script>
+<script src="/js/alpine.min.js" defer></script>
+<script src="/js/chart.js"></script>
+<script src="/js/axios.min.js"></script>
 
 <script>
 // Store Alpine.js global pour les statistiques
@@ -115,6 +190,13 @@ document.addEventListener('alpine:init', () => {
             conducteursListe: []
         },
 
+        debugConducteurs() {
+            console.log('Conducteurs liste:', this.donnees.conducteursListe);
+            console.log('Conducteurs sélectionnés:', this.filtres.conducteurs);
+            console.log('Données exces:', this.donnees.exces);
+        },
+
+        // Modifier la fonction init() pour formater correctement les conducteurs
         init() {
             // Initialiser les dates (mois précédent)
             const aujourdhui = new Date();
@@ -140,26 +222,48 @@ document.addEventListener('alpine:init', () => {
 
                 this.donnees = response.data;
 
-                // Extraire la liste des conducteurs
+                // Extraire et formater correctement la liste des conducteurs
                 const conducteursSet = new Set();
-                this.donnees.courses.forEach(course => {
-                    conducteursSet.add(`${course.matricule} ${course.nom}`);
+                this.donnees.exces.forEach(exce => {
+                    const conducteurStr = `${exce.matricule} ${exce.nom}`.trim();
+                    if (conducteurStr) {
+                        conducteursSet.add(conducteurStr);
+                    }
                 });
 
-                this.donnees.conducteursListe = Array.from(conducteursSet).sort().map(c => ({
-                    value: c,
-                    text: c
-                }));
+                this.donnees.courses.forEach(course => {
+                    const conducteurStr = `${course.matricule} ${course.nom}`.trim();
+                    if (conducteurStr) {
+                        conducteursSet.add(conducteurStr);
+                    }
+                });
 
-                // Initialiser la sélection des conducteurs
+                // Formater pour Alpine.js
+                this.donnees.conducteursListe = Array.from(conducteursSet)
+                    .sort()
+                    .map(c => ({
+                        value: c,
+                        text: c
+                    }));
+
+                // Initialiser la sélection avec TOUS les conducteurs
                 this.filtres.conducteurs = this.donnees.conducteursListe.map(c => c.value);
 
-                // Émettre l'événement de chargement terminé
+                console.log('Données chargées:', {
+                    exces: this.donnees.exces.length,
+                    courses: this.donnees.courses.length,
+                    conducteurs: this.donnees.conducteursListe.length
+                });
+
+                // Émettre l'événement
                 window.dispatchEvent(new CustomEvent('statistiques-donnees-chargees'));
 
+                // Appliquer les filtres après chargement
+                setTimeout(() => this.appliquerFiltres(), 100);
+
             } catch (error) {
-                console.error('Erreur lors du chargement des données:', error);
-                alert('Erreur lors du chargement des données. Veuillez réessayer.');
+                console.error('Erreur:', error);
+                alert('Erreur lors du chargement des données.');
             } finally {
                 this.loading = false;
             }
@@ -203,6 +307,11 @@ document.addEventListener('alpine:init', () => {
                 })
             };
 
+            console.log('Filtres appliqués:', {
+                excesFiltres: donneesFiltrees.exces.length,
+                coursesFiltrees: donneesFiltrees.courses.length
+            });
+
             // Émettre l'événement de filtres appliqués
             window.dispatchEvent(new CustomEvent('statistiques-filtres-appliques', {
                 detail: donneesFiltrees
@@ -212,13 +321,28 @@ document.addEventListener('alpine:init', () => {
         },
 
         reinitialiserFiltres() {
+            console.log('Réinitialisation des filtres');
+
+            // Réinitialiser les filtres
             this.filtres.categories = ['mineur', 'moyen', 'grave', 'majeur'];
             this.filtres.voies = ['V1', 'V2'];
-            this.filtres.conducteurs = this.donnees.conducteursListe.map(c => c.value);
+
+            // Réinitialiser à TOUS les conducteurs
+            if (this.donnees.conducteursListe && this.donnees.conducteursListe.length > 0) {
+                this.filtres.conducteurs = this.donnees.conducteursListe.map(c => c.value);
+            }
+
+            // Réinitialiser la recherche
+            this.filtres.rechercheConducteur = '';
+
+            // Réappliquer les filtres
             this.appliquerFiltres();
         },
 
         async exporterCSV() {
+            // Debug temporaire
+            this.debugConducteurs();
+
             try {
                 const params = new URLSearchParams({
                     debut: this.formatDatePourAPI(this.filtres.debut),
