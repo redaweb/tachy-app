@@ -106,26 +106,39 @@
 
 @push('scripts')
 <script>
-function debounce(func, delay) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), delay);
-    };
-}
-
 function repartitionConducteurs() {
     return {
+        store: Alpine.store('statistiques'),
         chart: null,
-        isUpdating: false,
+        loading: true,
         currentPage: 1,
         perPage: 10,
-        updateChart: null,
+
+        init() {
+            this.loading = true;
+
+            // Écouteurs d'événements
+            window.addEventListener('statistiques-donnees-chargees', () => this.handleDataLoaded());
+            window.addEventListener('statistiques-filtres-appliques', () => this.handleDataLoaded());
+
+            // Premier chargement si données déjà présentes
+            if (this.store?.donnees?.exces && this.store?.donnees?.courses) {
+                this.handleDataLoaded();
+            }
+        },
+
+        handleDataLoaded() {
+            console.log('Data loaded or filters applied, updating conducteurs stats');
+            this.loading = false;
+            this.currentPage = 1;
+            this.initChart();
+            this.majChart();
+        },
 
         // Propriétés calculées
         get donneesFiltrees() {
-            const filtres = Alpine.store('statistiques').filtres;
-            const donnees = Alpine.store('statistiques').donnees;
+            const filtres = this.store.filtres;
+            const donnees = this.store.donnees;
 
             if (!donnees.exces || !donnees.courses) {
                 return { exces: [], courses: [] };
@@ -213,24 +226,6 @@ function repartitionConducteurs() {
         },
 
         // Méthodes
-        init() {
-            this.updateChart = debounce(this.majChart.bind(this), 200);
-
-            // Appel initial
-            this.updateChart();
-
-            // Écouter les changements de filtres
-            window.addEventListener('statistiques-filtres-appliques', () => {
-                this.updateChart();
-                this.currentPage = 1;
-            });
-
-            // Écouter le chargement initial des données
-            window.addEventListener('statistiques-donnees-chargees', () => {
-                this.updateChart();
-            });
-        },
-
         initChart() {
             const canvas = document.getElementById('conducteursChart');
             if (!canvas) {
@@ -288,7 +283,7 @@ function repartitionConducteurs() {
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    //maintainAspectRatio: false,
                     scales: {
                         x: {
                             stacked: true
@@ -306,51 +301,35 @@ function repartitionConducteurs() {
         },
 
         majChart() {
-            console.log('majchart called for conducteurs');
-
-            if (this.isUpdating) {
-                console.warn('Update already in progress, skipping');
-                return;
-            }
-
+            if (this.isUpdating) return;
             this.isUpdating = true;
 
-            if (this.totalConducteurs === 0) {
-                if (this.chart) {
-                    this.chart.destroy();
-                    this.chart = null;
+            if (!this.chart || this.totalConducteurs === 0) {
+                this.isUpdating = false;
+                return;
+            }
+
+            const conducteurs = this.conducteursData.slice(0, 20);
+
+            requestAnimationFrame(() => {
+                try {
+                    this.chart.data.labels = conducteurs.map(c => c.nom.split(' ')[0]);
+                    this.chart.data.datasets[0].data = conducteurs.map(c => c.mineur);
+                    this.chart.data.datasets[1].data = conducteurs.map(c => c.moyen);
+                    this.chart.data.datasets[2].data = conducteurs.map(c => c.grave);
+                    this.chart.data.datasets[3].data = conducteurs.map(c => c.majeur);
+
+                    this.chart.update();
+                } catch (err) {
+                    console.error('Chart update skipped:', err);
+                } finally {
+                    this.isUpdating = false;
                 }
-                this.isUpdating = false;
-                return;
-            }
-
-            if (!this.chart || !Chart.getChart(this.chart.canvas)) {
-                console.warn('Chart instance no longer valid → recreating');
-                this.initChart();
-                this.isUpdating = false;
-                return;
-            }
-
-            try {
-                // Limiter à 20 conducteurs max pour la lisibilité
-                const conducteurs = this.conducteursData.slice(0, 20);
-
-                this.chart.data.labels = conducteurs.map(c => c.nom.split(' ')[0]); // Prenom seulement
-                this.chart.data.datasets[0].data = conducteurs.map(c => c.mineur);
-                this.chart.data.datasets[1].data = conducteurs.map(c => c.moyen);
-                this.chart.data.datasets[2].data = conducteurs.map(c => c.grave);
-                this.chart.data.datasets[3].data = conducteurs.map(c => c.majeur);
-                this.chart.update('none');
-            } catch (err) {
-                console.error('Error during chart update, forcing recreation:', err);
-                this.initChart();
-            } finally {
-                this.isUpdating = false;
-            }
+            });
         },
 
         formatDate(dateStr) {
-            return Alpine.store('statistiques').formatDateAffichage(dateStr);
+            return this.store?.formatDateAffichage?.(dateStr) || dateStr;
         }
     }
 }

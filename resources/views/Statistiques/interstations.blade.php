@@ -281,96 +281,73 @@ function repartitionInterstations() {
 
             // Écouter le chargement initial des données
             window.addEventListener('statistiques-donnees-chargees', () => {
-                this.majChart();
                 this.initCarte();
+                this.majChart();
+
             });
         },
 
         initChart() {
-            const ctx = document.getElementById('interstationsChart');
-            if (!ctx) return;
+            const canvas = document.getElementById('interstationsChart');
+            if (!canvas) return;
 
-            this.chart = new Chart(ctx.getContext('2d'), {
+            // 🔴 IMPORTANT : détruire l'ancien chart
+            const existing = Chart.getChart(canvas);
+            if (existing) {
+                existing.destroy();
+            }
+
+            if (this.chart) {
+                this.chart.destroy();
+                this.chart = null;
+            }
+
+            const ctx = canvas.getContext('2d');
+
+            this.chart = Alpine.raw(new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: [],
                     datasets: [
-                        {
-                            label: 'Excès mineur',
-                            data: [],
-                            backgroundColor: 'rgba(75, 192, 40, 0.8)',
-                            borderColor: 'rgba(75, 192, 40, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Excès moyen',
-                            data: [],
-                            backgroundColor: 'rgba(255, 206, 86, 0.8)',
-                            borderColor: 'rgba(255, 206, 86, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Excès grave',
-                            data: [],
-                            backgroundColor: 'rgba(200, 50, 0, 0.8)',
-                            borderColor: 'rgba(200, 50, 0, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Excès majeur',
-                            data: [],
-                            backgroundColor: 'rgba(255, 50, 50, 0.8)',
-                            borderColor: 'rgba(255, 50, 50, 1)',
-                            borderWidth: 1
-                        }
+                        { label: 'Excès mineur', data: [], backgroundColor: 'rgba(75,192,40,0.8)' },
+                        { label: 'Excès moyen',  data: [], backgroundColor: 'rgba(255,206,86,0.8)' },
+                        { label: 'Excès grave',  data: [], backgroundColor: 'rgba(200,50,0,0.8)' },
+                        { label: 'Excès majeur', data: [], backgroundColor: 'rgba(255,50,50,0.8)' }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    const label = context.dataset.label || '';
-                                    const value = context.raw;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    return `${label}: ${value}`;
-                                }
-                            }
-                        }
-                    },
                     scales: {
-                        x: {
-                            stacked: true,
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 45
-                            }
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
-                            }
-                        }
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true }
                     }
                 }
-            });
+            }));
         },
 
         majChart() {
-            if (!this.chart) return;
+            if (!this.chart || !this.chart.data || !this.chart.data.datasets) {
+                console.warn('Chart not ready → skip update');
+                return;
+            }
 
-            // Limiter à 20 interstations max pour la lisibilité
+            if (this.interstationsData.length === 0) {
+                return;
+            }
+
             const interstations = this.interstationsData.slice(0, 20);
 
-            this.chart.data.labels = interstations.map(i => i.nom.substring(0, 20) + (i.nom.length > 20 ? '...' : ''));
+            this.chart.data.labels = interstations.map(i =>
+                i.nom.length > 20 ? i.nom.slice(0, 20) + '…' : i.nom
+            );
+
             this.chart.data.datasets[0].data = interstations.map(i => i.mineur);
             this.chart.data.datasets[1].data = interstations.map(i => i.moyen);
             this.chart.data.datasets[2].data = interstations.map(i => i.grave);
             this.chart.data.datasets[3].data = interstations.map(i => i.majeur);
+
+            // 🔵 update sans animation
             this.chart.update();
         },
 
