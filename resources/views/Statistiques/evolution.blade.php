@@ -29,11 +29,6 @@
                 Tous les excès
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="filtered-tab" data-bs-toggle="tab" data-bs-target="#filtered" type="button" role="tab">
-                Excès non exclus
-            </button>
-        </li>
     </ul>
     @endif
 
@@ -144,95 +139,8 @@
                 </div>
             </div>
         </div>
-
-        @if(auth()->user()->profil == 'DG' || in_array(auth()->user()->matricule, ['310040', '310020']) || auth()->user()->profil == 'managerR')
-        <!-- Onglet Excès non exclus -->
-        <div class="tab-pane fade" id="filtered" role="tabpanel">
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">
-                        <i class="fas fa-chart-line me-2"></i>Évolution temporelle (excès non exclus)
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="evolutionFilteredChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">
-                        <i class="fas fa-table me-2"></i>Liste des excès non exclus
-                    </h6>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0 stat-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Catégorie</th>
-                                    <th>Matricule</th>
-                                    <th>Rame</th>
-                                    <th>Conducteur</th>
-                                    <th>Inter-station</th>
-                                    <th>Détails</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template x-for="(exce, index) in filteredPaginatedExces" :key="exce.id">
-                                    <tr>
-                                        <td x-text="formatDate(exce.ladate)"></td>
-                                        <td>
-                                            <span class="badge" :class="{
-                                                'badge-mineur': exce.categorie === 'mineur',
-                                                'badge-moyen': exce.categorie === 'moyen',
-                                                'badge-grave': exce.categorie === 'grave',
-                                                'badge-majeur': exce.categorie === 'majeur'
-                                            }" x-text="exce.categorie.charAt(0).toUpperCase() + exce.categorie.slice(1)"></span>
-                                        </td>
-                                        <td x-text="exce.matricule"></td>
-                                        <td x-text="exce.RAME"></td>
-                                        <td x-text="exce.nom"></td>
-                                        <td x-text="exce.interstation"></td>
-                                        <td x-text="exce.detail"></td>
-                                        <td>
-                                            <button @click="ouvrirCourse(exce.idcourse)" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-external-link-alt"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center p-3">
-                        <div x-text="`Affichage de ${((currentPageFiltered - 1) * perPage) + 1} à ${Math.min(currentPageFiltered * perPage, totalFilteredExces)} sur ${totalFilteredExces} excès`"></div>
-                        <nav>
-                            <ul class="pagination pagination-sm mb-0">
-                                <li class="page-item" :class="{ disabled: currentPageFiltered === 1 }">
-                                    <button class="page-link" @click="currentPageFiltered--">&laquo;</button>
-                                </li>
-                                <template x-for="page in totalFilteredPages" :key="page">
-                                    <li class="page-item" :class="{ active: page === currentPageFiltered }">
-                                        <button class="page-link" @click="currentPageFiltered = page" x-text="page"></button>
-                                    </li>
-                                </template>
-                                <li class="page-item" :class="{ disabled: currentPageFiltered === totalFilteredPages }">
-                                    <button class="page-link" @click="currentPageFiltered++">&raquo;</button>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
     </div>
+</div>
 </div>
 
 @push('scripts')
@@ -241,11 +149,9 @@ function evolutionExces() {
     return {
         store: Alpine.store('statistiques'),
         chart: null,
-        filteredChart: null,
         loading: true,
 
         currentPage: 1,
-        currentPageFiltered: 1,
         perPage: 10,
 
         init() {
@@ -264,7 +170,6 @@ function evolutionExces() {
         handleDataLoaded() {
             this.loading = false;
             this.currentPage = 1;
-            this.currentPageFiltered = 1;
             this.initCharts();
         },
 
@@ -273,34 +178,17 @@ function evolutionExces() {
             return this.filtrerExcess(false);
         },
 
-        get excesNonExclus() {
-            return this.filtrerExcess(true);
-        },
-
         get totalExces() {
             return this.excesFiltrees.length;
-        },
-
-        get totalFilteredExces() {
-            return this.excesNonExclus.length;
         },
 
         get totalPages() {
             return Math.ceil(this.totalExces / this.perPage) || 1;
         },
 
-        get totalFilteredPages() {
-            return Math.ceil(this.totalFilteredExces / this.perPage) || 1;
-        },
-
         get paginatedExces() {
             const start = (this.currentPage - 1) * this.perPage;
             return this.excesFiltrees.slice(start, start + this.perPage);
-        },
-
-        get filteredPaginatedExces() {
-            const start = (this.currentPageFiltered - 1) * this.perPage;
-            return this.excesNonExclus.slice(start, start + this.perPage);
         },
 
         // ─── Filtrage ─────────────────────────────────────────────────
@@ -341,7 +229,6 @@ function evolutionExces() {
         // ─── Gestion des graphiques ───────────────────────────────────
         initCharts() {
             this.initChart('evolutionChart', this.prepareDataForChart(this.excesFiltrees));
-            this.initChart('evolutionFilteredChart', this.prepareDataForChart(this.excesNonExclus));
         },
 
         initChart(canvasId, chartData) {
@@ -353,7 +240,7 @@ function evolutionExces() {
             if (existing) existing.destroy();
 
             const ctx = canvas.getContext('2d');
-
+            console.log('Initialisation du graphique', chartData);
             const chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: chartData,
@@ -371,8 +258,6 @@ function evolutionExces() {
 
             if (canvasId === 'evolutionChart') {
                 this.chart = chartInstance;
-            } else {
-                this.filteredChart = chartInstance;
             }
         },
 

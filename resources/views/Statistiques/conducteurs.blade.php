@@ -309,7 +309,7 @@ function repartitionConducteurs() {
                 return;
             }
 
-            const conducteurs = this.conducteursData.slice(0, 20);
+            const conducteurs = this.conducteursData.filter(c => c.totalExces > 0);
 
             requestAnimationFrame(() => {
                 try {
