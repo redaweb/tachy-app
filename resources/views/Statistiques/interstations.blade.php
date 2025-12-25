@@ -288,33 +288,23 @@ function repartitionInterstations() {
         },
 
         initChart() {
-            const canvas = document.getElementById('interstationsChart');
+            this.createChart('interstationsChart', this.prepareDataForChart());
+        },
+
+        createChart(canvasId, data) {
+            const canvas = document.getElementById(canvasId);
             if (!canvas) return;
 
-            // 🔴 IMPORTANT : détruire l'ancien chart
+            // Destroy existing chart
             const existing = Chart.getChart(canvas);
             if (existing) {
                 existing.destroy();
             }
 
-            if (this.chart) {
-                this.chart.destroy();
-                this.chart = null;
-            }
-
             const ctx = canvas.getContext('2d');
-
-            this.chart = Alpine.raw(new Chart(ctx, {
+            const chartInstance = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [
-                        { label: 'Excès mineur', data: [], backgroundColor: 'rgba(75,192,40,0.8)' },
-                        { label: 'Excès moyen',  data: [], backgroundColor: 'rgba(255,206,86,0.8)' },
-                        { label: 'Excès grave',  data: [], backgroundColor: 'rgba(200,50,0,0.8)' },
-                        { label: 'Excès majeur', data: [], backgroundColor: 'rgba(255,50,50,0.8)' }
-                    ]
-                },
+                data: data,
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -323,32 +313,43 @@ function repartitionInterstations() {
                         y: { stacked: true, beginAtZero: true }
                     }
                 }
-            }));
+            });
+
+            this.chart = Alpine.raw(chartInstance);
+        },
+
+        prepareDataForChart() {
+            const interstations = this.interstationsData.slice(0, 20);
+
+            return {
+                labels: interstations.map(i => i.nom.length > 20 ? i.nom.slice(0, 20) + '…' : i.nom),
+                datasets: [
+                    {
+                        label: 'Excès mineur',
+                        data: interstations.map(i => i.mineur),
+                        backgroundColor: 'rgba(75,192,40,0.8)'
+                    },
+                    {
+                        label: 'Excès moyen',
+                        data: interstations.map(i => i.moyen),
+                        backgroundColor: 'rgba(255,206,86,0.8)'
+                    },
+                    {
+                        label: 'Excès grave',
+                        data: interstations.map(i => i.grave),
+                        backgroundColor: 'rgba(200,50,0,0.8)'
+                    },
+                    {
+                        label: 'Excès majeur',
+                        data: interstations.map(i => i.majeur),
+                        backgroundColor: 'rgba(255,50,50,0.8)'
+                    }
+                ]
+            };
         },
 
         majChart() {
-            if (!this.chart || !this.chart.data || !this.chart.data.datasets) {
-                console.warn('Chart not ready → skip update');
-                return;
-            }
-
-            if (this.interstationsData.length === 0) {
-                return;
-            }
-
-            const interstations = this.interstationsData.slice(0, 20);
-
-            this.chart.data.labels = interstations.map(i =>
-                i.nom.length > 20 ? i.nom.slice(0, 20) + '…' : i.nom
-            );
-
-            this.chart.data.datasets[0].data = interstations.map(i => i.mineur);
-            this.chart.data.datasets[1].data = interstations.map(i => i.moyen);
-            this.chart.data.datasets[2].data = interstations.map(i => i.grave);
-            this.chart.data.datasets[3].data = interstations.map(i => i.majeur);
-
-            // 🔵 update sans animation
-            this.chart.update();
+            this.createChart('interstationsChart', this.prepareDataForChart());
         },
 
         async initCarte() {
