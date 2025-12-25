@@ -323,7 +323,7 @@ function syntheseMensuelle() {
         },
 
         ouvrirCourse(idcourse) {
-            window.open(`/lacourse?id=${idcourse}`, '_blank');
+            window.open(`/courses/${idcourse}`, '_blank');
         },
 
         formatDate(dateStr) {

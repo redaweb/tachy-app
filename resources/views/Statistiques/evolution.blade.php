@@ -175,7 +175,7 @@ function evolutionExces() {
 
         // ─── Données calculées ────────────────────────────────────────
         get excesFiltrees() {
-            return this.filtrerExcess(false);
+            return this.filtrerExcess();
         },
 
         get totalExces() {
@@ -192,12 +192,12 @@ function evolutionExces() {
         },
 
         // ─── Filtrage ─────────────────────────────────────────────────
-        filtrerExcess(onlyNonExclus = false) {
+        filtrerExcess() {
             if (!this.store?.donnees?.exces) return [];
 
             const filtres = this.store.filtres;
             let exces = this.store.donnees.exces;
-
+            console.log('Filtrage des excès avec les filtres:', filtres,exces);
             // Filtrage date + filtres classiques
             exces = exces.filter(ex => {
                 const date = new Date(ex.ladate);
@@ -211,10 +211,7 @@ function evolutionExces() {
                        filtres.conducteurs.includes(ex.matricule + ' ' + ex.nom);
             });
 
-            // Filtre supplémentaire : seulement les non exclus ?
-            if (onlyNonExclus) {
-                exces = exces.filter(ex => !this.regleExclu(ex));
-            }
+
 
             // Optionnel : tri par date descendant
             return exces.sort((a, b) => new Date(b.ladate) - new Date(a.ladate));
@@ -262,6 +259,32 @@ function evolutionExces() {
         },
 
         prepareDataForChart(excesList) {
+            console.log('Préparation des données pour le graphique avec', excesList, 'excès');
+            const labelsSet = new Set();
+            excesList.forEach(ex => {
+                const date = new Date(ex.ladate);
+                const label = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                labelsSet.add(label);
+            });
+            const labels = Array.from(labelsSet).sort();
+            const mineurByDate = {};
+            const moyenByDate = {};
+            const graveByDate = {};
+            const majeurByDate = {};
+            labels.forEach(label => {
+                mineurByDate[label] = 0;
+                moyenByDate[label] = 0;
+                graveByDate[label] = 0;
+                majeurByDate[label] = 0;
+            });
+            excesList.forEach(ex => {
+                const date = new Date(ex.ladate);
+                const label = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                if (ex.categorie === 'mineur') mineurByDate[label]++;
+                else if (ex.categorie === 'moyen') moyenByDate[label]++;
+                else if (ex.categorie === 'grave') graveByDate[label]++;
+                else if (ex.categorie === 'majeur') majeurByDate[label]++;
+            });
             // Compter par catégorie
             const counts = {
                 mineur: 0,
@@ -277,24 +300,41 @@ function evolutionExces() {
             });
 
             return {
-                labels: ['Mineur', 'Moyen', 'Grave', 'Majeur'],
-                datasets: [{
-                    label: 'Nombre d\'excès',
-                    data: [counts.mineur, counts.moyen, counts.grave, counts.majeur],
-                    backgroundColor: [
-                        'rgba(75,192,40,0.8)',
-                        'rgba(255,206,86,0.8)',
-                        'rgba(200,50,0,0.8)',
-                        'rgba(255,50,50,0.8)'
-                    ],
-                    borderColor: [
-                        '#4bc028',
-                        '#ffce56',
-                        '#c83200',
-                        '#ff3232'
-                    ],
-                    borderWidth: 1
-                }]
+                labels:labels,
+                datasets: [
+                    {
+                        label: 'Mineur',
+                        data: labels.map(label => mineurByDate[label]),
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Moyen',
+                        data: labels.map(label => moyenByDate[label]),
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Grave',
+                        data: labels.map(label => graveByDate[label]),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Majeur',
+                        data: labels.map(label => majeurByDate[label]),
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        fill: false,
+                        tension: 0.1
+                    }
+                ]
             };
         },
 
@@ -304,9 +344,7 @@ function evolutionExces() {
         },
 
         ouvrirCourse(idcourse) {
-            if (idcourse && this.store?.ouvrirCourse) {
-                this.store.ouvrirCourse(idcourse);
-            }
+            window.open(`/courses/${idcourse}`, '_blank');
         }
     }
 }
