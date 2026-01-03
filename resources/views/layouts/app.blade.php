@@ -195,6 +195,29 @@
                                 @endif
                             </ul>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="statistiquesDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-chart-bar me-2"></i>Stat-Freinages
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="statistiquesDropdown">
+                                <li><a class="dropdown-item" href="{{ route('stat-freinages.categories') }}">Répartition par catégorie</a></li>
+                                <li><a class="dropdown-item" href="{{ route('stat-freinages.evolution') }}">Évolution par excès</a></li>
+                                <li><a class="dropdown-item" href="{{ route('stat-freinages.conducteurs') }}">Répartition par conducteur</a></li>
+                                <li><a class="dropdown-item" href="{{ route('stat-freinages.interstations') }}">Répartition par inter-station</a></li>
+                                
+                                @if(in_array(auth()->user()->matricule, ['310040', '310020']) ||
+                                    auth()->user()->profil === 'DG' ||
+                                    auth()->user()->profil === 'managerR')
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ route('statistiques.tous-exces') }}">Tous les excès</a></li>
+                                @endif
+
+                                @if(in_array(auth()->user()->matricule, ['310040', '310020']))
+                                <li><a class="dropdown-item" href="{{ route('statistiques.journal') }}">Journal</a></li>
+                                @endif
+                            </ul>
+                        </li>
                         @endif
                     </ul>
                 </div>

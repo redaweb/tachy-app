@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnveloppeController;
 use App\Http\Controllers\ExcesController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\StatFreinageController;
 use App\Http\Controllers\StatistiqueController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +66,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('export-csv', [StatistiqueController::class, 'exportCSV'])->name('export-csv');
     });
 
+    // Statistiques Freinage
+    Route::prefix('stat-freinages')->name('stat-freinages.')->group(function () {
+        Route::get('categories', [StatFreinageController::class, 'categories'])->name('categories');
+        Route::get('evolution', [StatFreinageController::class, 'evolution'])->name('evolution');
+        Route::get('conducteurs', [StatFreinageController::class, 'conducteurs'])->name('conducteurs');
+        Route::get('interstations', [StatFreinageController::class, 'interstations'])->name('interstations');
+        Route::get('api/freinage', [StatFreinageController::class, 'apiFreinage'])->name('api.freinage');
+        Route::get('export-csv', [StatFreinageController::class, 'exportCSV'])->name('export-csv');
+    });
     // Routes Enveloppes (avec routes supplémentaires)
     Route::prefix('enveloppes')->name('enveloppes.')->group(function () {
         Route::get('/', [EnveloppeController::class, 'index'])->name('index');
