@@ -102,39 +102,21 @@
             <i class="fas fa-tags me-1"></i> Catégories
         </label>
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="mineur"
-                   x-model="$store.StatFreinages.filtres.categories"
+            <input class="form-check-input" type="checkbox" value="FU"
+                   x-model="$store.StatFreinages.filtres.types"
                    @change="$store.StatFreinages.appliquerFiltres()"
-                   id="cat-mineur">
-            <label class="form-check-label small" for="cat-mineur">
-                <span class="badge badge-mineur px-2 py-1">Excès mineur</span>
+                   id="cat-FU">
+            <label class="form-check-label small" for="cat-FU">
+                <span class="badge badge-FU px-2 py-1"> FU</span>
             </label>
         </div>
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="moyen"
-                   x-model="$store.StatFreinages.filtres.categories"
+            <input class="form-check-input" type="checkbox" value="patin"
+                   x-model="$store.StatFreinages.filtres.types"
                    @change="$store.StatFreinages.appliquerFiltres()"
-                   id="cat-moyen">
-            <label class="form-check-label small" for="cat-moyen">
-                <span class="badge badge-moyen px-2 py-1">Excès moyen</span>
-            </label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="grave"
-                   x-model="$store.StatFreinages.filtres.categories"
-                   @change="$store.StatFreinages.appliquerFiltres()"
-                   id="cat-grave">
-            <label class="form-check-label small" for="cat-grave">
-                <span class="badge badge-grave px-2 py-1">Excès grave</span>
-            </label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="majeur"
-                   x-model="$store.StatFreinages.filtres.categories"
-                   @change="$store.StatFreinages.appliquerFiltres()"
-                   id="cat-majeur">
-            <label class="form-check-label small" for="cat-majeur">
-                <span class="badge badge-majeur px-2 py-1">Excès majeur</span>
+                   id="cat-patin">
+            <label class="form-check-label small" for="cat-patin">
+                <span class="badge badge-patin px-2 py-1"> patin</span>
             </label>
         </div>
     </div>

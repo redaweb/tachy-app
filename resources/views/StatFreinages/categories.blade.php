@@ -1,10 +1,10 @@
-{{-- resources/views/StatFreinages/categories.blade.php --}}
+{{-- resources/views/StatFreinages/types.blade.php --}}
 @extends('StatFreinages.layout')
 
 @section('title', 'StatFreinages - Répartition par Catégorie')
 
 @section('StatFreinages-content')
-<div x-data="repartitionCategories()" x-init="init()">
+<div x-data="repartitiontypes()" x-init="init()">
     <!-- Overlay de chargement -->
     <div x-show="$store.StatFreinages.loading" class="loading-overlay">
         <div class="text-center">
@@ -17,7 +17,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">
-            <i class="fas fa-chart-pie me-2"></i>Répartition par catégorie d'excès
+            <i class="fas fa-chart-pie me-2"></i>Répartition par catégorie de freinage
         </h4>
         <div class="text-muted small" x-text="`Données du ${formatDate($store.StatFreinages.filtres.debut)} au ${formatDate($store.StatFreinages.filtres.fin)}`"></div>
     </div>
@@ -34,35 +34,26 @@
                     <table class="table table-hover mb-0 stat-table">
                         <thead>
                             <tr>
-                                <th>Type d'excès</th>
+                                <th>Type de freinage</th>
                                 <th class="text-end">Nombre</th>
                                 <th class="text-end">%</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="badge badge-mineur">Excès mineur</span></td>
-                                <td class="text-end fw-bold" x-text="nbmineur"></td>
-                                <td class="text-end" x-text="`${pcmineur}%`"></td>
+                                <td><span class="badge badge-FU">FU</span></td>
+                                <td class="text-end fw-bold" x-text="nbFU"></td>
+                                <td class="text-end" x-text="`${pcFU}%`"></td>
                             </tr>
                             <tr>
-                                <td><span class="badge badge-moyen">Excès moyen</span></td>
-                                <td class="text-end fw-bold" x-text="nbmoyen"></td>
-                                <td class="text-end" x-text="`${pcmoyen}%`"></td>
+                                <td><span class="badge badge-patin">patin</span></td>
+                                <td class="text-end fw-bold" x-text="nbpatin"></td>
+                                <td class="text-end" x-text="`${pcpatin}%`"></td>
                             </tr>
                             <tr>
-                                <td><span class="badge badge-grave">Excès grave</span></td>
-                                <td class="text-end fw-bold" x-text="nbgrave"></td>
-                                <td class="text-end" x-text="`${pcgrave}%`"></td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge badge-majeur">Excès majeur</span></td>
-                                <td class="text-end fw-bold" x-text="nbmajeur"></td>
-                                <td class="text-end" x-text="`${pcmajeur}%`"></td>
-                            </tr>
                             <tr class="table-secondary">
                                 <td class="fw-bold">TOTAL</td>
-                                <td class="text-end fw-bold" x-text="totalExces"></td>
+                                <td class="text-end fw-bold" x-text="totalfreinages"></td>
                                 <td class="text-end fw-bold">100%</td>
                             </tr>
                         </tbody>
@@ -114,7 +105,7 @@
                 </div>
                 <div class="card-body">
                     <div class="chart-container">
-                        <canvas id="excesChart"></canvas>
+                        <canvas id="freinagesChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -132,7 +123,7 @@
         };
     }
 
-    function repartitionCategories() {
+    function repartitiontypes() {
         return {
             chart: null,
             updateChart: null,
@@ -140,22 +131,22 @@
             // Propriétés calculées
             get donneesFiltrees() {
                 const store = Alpine.store('StatFreinages');
-                if (!store || !store.donnees || !store.donnees.exces) {
-                    return { exces: [], courses: [] };
+                if (!store || !store.donnees || !store.donnees.freinages) {
+                    return { freinages: [], courses: [] };
                 }
                 const filtres = store.filtres;
                 const donnees = store.donnees;
 
-                const excesFiltres = donnees.exces.filter(exce => {
-                    const dateExce = new Date(exce.ladate);
+                const freinagesFiltres = donnees.freinages.filter(freinage => {
+                    const datefreinage = new Date(freinage.ladate);
                     const dateDebut = new Date(filtres.debut);
                     const dateFin = new Date(filtres.fin);
 
-                    return dateExce >= dateDebut &&
-                           dateExce <= dateFin &&
-                           filtres.voies.includes(exce.voie) &&
-                           filtres.categories.includes(exce.categorie) &&
-                           filtres.conducteurs.includes(exce.matricule + ' ' + exce.nom);
+                    return datefreinage >= dateDebut &&
+                           datefreinage <= dateFin &&
+                           filtres.voies.includes(freinage.voie) &&
+                           filtres.types.includes(freinage.type) &&
+                           filtres.conducteurs.includes(freinage.matricule + ' ' + freinage.nom);
                 });
 
                 const coursesFiltrees = donnees.courses.filter(course => {
@@ -169,44 +160,29 @@
                            filtres.conducteurs.includes(course.matricule + ' ' + course.nom);
                 });
 
-                return { exces: excesFiltres, courses: coursesFiltrees };
+                return { freinages: freinagesFiltres, courses: coursesFiltrees };
             },
 
-            get totalExces() {
-                return this.donneesFiltrees.exces.length;
+            get totalfreinages() {
+                return this.donneesFiltrees.freinages.length;
             },
 
-            get nbmineur() {
-                return this.donneesFiltrees.exces.filter(e => e.categorie === 'mineur').length;
+            get nbFU() {
+                return this.donneesFiltrees.freinages.filter(e => e.type === 'FU').length;
             },
 
-            get pcmineur() {
-                return this.totalExces > 0 ? ((this.nbmineur / this.totalExces) * 100).toFixed(1) : '0.0';
+            get pcFU() {
+                return this.totalfreinages > 0 ? ((this.nbFU / this.totalfreinages) * 100).toFixed(1) : '0.0';
             },
 
-            get nbmoyen() {
-                return this.donneesFiltrees.exces.filter(e => e.categorie === 'moyen').length;
+            get nbpatin() {
+                return this.donneesFiltrees.freinages.filter(e => e.type === 'patin').length;
             },
 
-            get pcmoyen() {
-                return this.totalExces > 0 ? ((this.nbmoyen / this.totalExces) * 100).toFixed(1) : '0.0';
+            get pcpatin() {
+                return this.totalfreinages > 0 ? ((this.nbpatin / this.totalfreinages) * 100).toFixed(1) : '0.0';
             },
 
-            get nbgrave() {
-                return this.donneesFiltrees.exces.filter(e => e.categorie === 'grave').length;
-            },
-
-            get pcgrave() {
-                return this.totalExces > 0 ? ((this.nbgrave / this.totalExces) * 100).toFixed(1) : '0.0';
-            },
-
-            get nbmajeur() {
-                return this.donneesFiltrees.exces.filter(e => e.categorie === 'majeur').length;
-            },
-
-            get pcmajeur() {
-                return this.totalExces > 0 ? ((this.nbmajeur / this.totalExces) * 100).toFixed(1) : '0.0';
-            },
 
             get nbtotal() {
                 return this.donneesFiltrees.courses.length;
@@ -253,9 +229,9 @@
             },
 
             initChart() {
-                const canvas = document.getElementById('excesChart');
+                const canvas = document.getElementById('freinagesChart');
                 if (!canvas) {
-                    console.warn('Canvas #excesChart not found yet');
+                    console.warn('Canvas #freinagesChart not found yet');
                     setTimeout(() => this.initChart(), 100);
                     return;
                 }
@@ -275,20 +251,16 @@
                 this.chart = new Chart(ctx, {
                     type: 'pie',
                     data: {
-                        labels: ['Excès mineur', 'Excès moyen', 'Excès grave', 'Excès majeur'],
+                        labels: ['FU', 'patin'],
                         datasets: [{
-                            data: [this.nbmineur, this.nbmoyen, this.nbgrave, this.nbmajeur],
+                            data: [this.nbFU, this.nbpatin],
                             backgroundColor: [
                                 'rgba(75, 192, 40, 0.8)',
-                                'rgba(255, 206, 86, 0.8)',
-                                'rgba(200, 50, 0, 0.8)',
-                                'rgba(255, 50, 50, 0.8)'
+                                'rgba(255, 206, 86, 0.8)'
                             ],
                             borderColor: [
                                 'rgba(75, 192, 40, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(200, 50, 0, 1)',
-                                'rgba(255, 50, 50, 1)'
+                                'rgba(255, 206, 86, 1)'
                             ],
                             borderWidth: 1,
                             hoverOffset: 15
@@ -325,7 +297,7 @@
             majChart() {
                 console.log('majchart called');
 
-                if (this.totalExces === 0) {
+                if (this.totalfreinages === 0) {
                     if (this.chart) {
                         this.chart.destroy();
                         this.chart = null;
@@ -341,17 +313,13 @@
 
                 try {
                     this.chart.data.datasets[0].data = [
-                        this.nbmineur || 0,
-                        this.nbmoyen || 0,
-                        this.nbgrave || 0,
-                        this.nbmajeur || 0
+                        this.nbFU || 0,
+                        this.nbpatin || 0,
                     ];
 
                     this.chart.data.labels = [
-                        `Excès mineur (${this.pcmineur}%)`,
-                        `Excès moyen (${this.pcmoyen}%)`,
-                        `Excès grave (${this.pcgrave}%)`,
-                        `Excès majeur (${this.pcmajeur}%)`
+                        `FU (${this.pcFU}%)`,
+                        `patin (${this.pcpatin}%)`
                     ];
 
                     this.chart.update('none');

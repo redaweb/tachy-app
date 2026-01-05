@@ -98,15 +98,7 @@
                                         <td x-text="exce.nom"></td>
                                         <td x-text="exce.interstation"></td>
                                         <td x-text="exce.detail"></td>
-                                        @if(auth()->user()->profil == 'DG' || in_array(auth()->user()->matricule, ['310040', '310020']) || auth()->user()->profil == 'managerR')
-                                        <td>
-                                            <small>
-                                                <span x-text="regle(exce) ? 'non exclu' : 'exclu'"></span><br>
-                                                <span x-text="`Vitesse autorisée: ${exce.autorise}`"></span><br>
-                                                <span x-text="`Tolérance: ${tolerance(exce)}`"></span>
-                                            </small>
-                                        </td>
-                                        @endif
+
                                         <td>
                                             <button @click="ouvrirCourse(exce.idcourse)" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-external-link-alt"></i>
@@ -218,10 +210,7 @@ function evolutionExces() {
         },
 
         // ─── Logique exclusion (à adapter selon votre règle réelle) ───
-        regleExclu(exces) {
-            // Exemple : à remplacer par votre vraie logique
-            return exces.autorise && (exces.vitesse || 0) <= (exces.autorise * 1.05); // tolérance 5% par ex.
-        },
+
 
         // ─── Gestion des graphiques ───────────────────────────────────
         initCharts() {

@@ -58,11 +58,9 @@
                             <th>Conducteur</th>
                             <th>Matricule</th>
                             <th>Contrôles réalisés</th>
-                            <th class="table-secondary">Total excès</th>
-                            <th>Excès mineur</th>
-                            <th>Excès moyen</th>
-                            <th>Excès grave</th>
-                            <th>Excès majeur</th>
+                            <th class="table-secondary">Total freinages</th>
+                            <th>FU</th>
+                            <th>patin</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,11 +69,9 @@
                                 <td x-text="conducteur.nom"></td>
                                 <td x-text="conducteur.matricule"></td>
                                 <td x-text="conducteur.nbCourses"></td>
-                                <td class="table-secondary fw-bold" x-text="conducteur.totalExces"></td>
-                                <td x-text="conducteur.mineur"></td>
-                                <td x-text="conducteur.moyen"></td>
-                                <td x-text="conducteur.grave"></td>
-                                <td x-text="conducteur.majeur"></td>
+                                <td class="table-secondary fw-bold" x-text="conducteur.totalfreinages"></td>
+                                <td x-text="conducteur.FU"></td>
+                                <td x-text="conducteur.patin"></td>
                             </tr>
                         </template>
                     </tbody>
@@ -122,7 +118,7 @@ function repartitionConducteurs() {
             window.addEventListener('StatFreinages-filtres-appliques', () => this.handleDataLoaded());
 
             // Premier chargement si données déjà présentes
-            if (this.store?.donnees?.exces && this.store?.donnees?.courses) {
+            if (this.store?.donnees?.freinages && this.store?.donnees?.courses) {
                 this.handleDataLoaded();
             }
         },
@@ -140,20 +136,20 @@ function repartitionConducteurs() {
             const filtres = this.store.filtres;
             const donnees = this.store.donnees;
 
-            if (!donnees.exces || !donnees.courses) {
-                return { exces: [], courses: [] };
+            if (!donnees.freinages || !donnees.courses) {
+                return { freinages: [], courses: [] };
             }
 
-            const excesFiltres = donnees.exces.filter(exce => {
-                const dateExce = new Date(exce.ladate);
+            const freinagesFiltres = donnees.freinages.filter(freinage => {
+                const datefreinage = new Date(freinage.ladate);
                 const dateDebut = new Date(filtres.debut);
                 const dateFin = new Date(filtres.fin);
 
-                return dateExce >= dateDebut &&
-                       dateExce <= dateFin &&
-                       filtres.voies.includes(exce.voie) &&
-                       filtres.categories.includes(exce.categorie) &&
-                       filtres.conducteurs.includes(exce.matricule + ' ' + exce.nom);
+                return datefreinage >= dateDebut &&
+                       datefreinage <= dateFin &&
+                       filtres.voies.includes(freinage.voie) &&
+                       filtres.types.includes(freinage.type) &&
+                       filtres.conducteurs.includes(freinage.matricule + ' ' + freinage.nom);
             });
 
             const coursesFiltrees = donnees.courses.filter(course => {
@@ -167,7 +163,7 @@ function repartitionConducteurs() {
                        filtres.conducteurs.includes(course.matricule + ' ' + course.nom);
             });
 
-            return { exces: excesFiltres, courses: coursesFiltrees };
+            return { freinages: freinagesFiltres, courses: coursesFiltrees };
         },
 
         get conducteursData() {
@@ -181,35 +177,31 @@ function repartitionConducteurs() {
                         nom: course.nom,
                         matricule: course.matricule,
                         nbCourses: 0,
-                        mineur: 0,
-                        moyen: 0,
-                        grave: 0,
-                        majeur: 0,
-                        totalExces: 0
+                        FU: 0,
+                        patin: 0,
+                        totalfreinages: 0
                     });
                 }
                 conducteursMap.get(key).nbCourses++;
             });
 
-            // Compter les excès par conducteur
-            this.donneesFiltrees.exces.forEach(exce => {
-                const key = `${exce.matricule}|${exce.nom}`;
+            // Compter les freinages par conducteur
+            this.donneesFiltrees.freinages.forEach(freinage => {
+                const key = `${freinage.matricule}|${freinage.nom}`;
                 if (conducteursMap.has(key)) {
                     const conducteur = conducteursMap.get(key);
-                    conducteur.totalExces++;
+                    conducteur.totalfreinages++;
 
-                    switch(exce.categorie) {
-                        case 'mineur': conducteur.mineur++; break;
-                        case 'moyen': conducteur.moyen++; break;
-                        case 'grave': conducteur.grave++; break;
-                        case 'majeur': conducteur.majeur++; break;
+                    switch(freinage.type) {
+                        case 'FU': conducteur.FU++; break;
+                        case 'patin': conducteur.patin++; break;
                     }
                 }
             });
 
-            // Convertir en tableau et trier par total excès décroissant
+            // Convertir en tableau et trier par total freinages décroissant
             return Array.from(conducteursMap.values())
-                .sort((a, b) => b.totalExces - a.totalExces);
+                .sort((a, b) => b.totalfreinages - a.totalfreinages);
         },
 
         get totalConducteurs() {
@@ -252,31 +244,17 @@ function repartitionConducteurs() {
                     labels: [],
                     datasets: [
                         {
-                            label: 'Excès mineur',
+                            label: 'FU',
                             data: [],
                             backgroundColor: 'rgba(75, 192, 40, 0.8)',
                             borderColor: 'rgba(75, 192, 40, 1)',
                             borderWidth: 1
                         },
                         {
-                            label: 'Excès moyen',
+                            label: 'patin',
                             data: [],
                             backgroundColor: 'rgba(255, 206, 86, 0.8)',
                             borderColor: 'rgba(255, 206, 86, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Excès grave',
-                            data: [],
-                            backgroundColor: 'rgba(200, 50, 0, 0.8)',
-                            borderColor: 'rgba(200, 50, 0, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Excès majeur',
-                            data: [],
-                            backgroundColor: 'rgba(255, 50, 50, 0.8)',
-                            borderColor: 'rgba(255, 50, 50, 1)',
                             borderWidth: 1
                         }
                     ]
@@ -309,15 +287,13 @@ function repartitionConducteurs() {
                 return;
             }
 
-            const conducteurs = this.conducteursData.filter(c => c.totalExces > 0);
+            const conducteurs = this.conducteursData.filter(c => c.totalfreinages > 0);
 
             requestAnimationFrame(() => {
                 try {
                     this.chart.data.labels = conducteurs.map(c => c.nom.split(' ')[0]);
-                    this.chart.data.datasets[0].data = conducteurs.map(c => c.mineur);
-                    this.chart.data.datasets[1].data = conducteurs.map(c => c.moyen);
-                    this.chart.data.datasets[2].data = conducteurs.map(c => c.grave);
-                    this.chart.data.datasets[3].data = conducteurs.map(c => c.majeur);
+                    this.chart.data.datasets[0].data = conducteurs.map(c => c.FU);
+                    this.chart.data.datasets[1].data = conducteurs.map(c => c.patin);
 
                     this.chart.update();
                 } catch (err) {
