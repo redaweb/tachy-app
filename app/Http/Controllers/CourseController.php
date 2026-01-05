@@ -632,13 +632,19 @@ class CourseController extends Controller
     /**
      * Construire les données d'analyse partagées pour show/depouillement
      */
-    private function buildCourseViewData(Course $course)
+    private function buildCourseViewData(Course $course, $idenveloppe = null)
     {
         $lannee = Carbon::parse($course->ladate)->format('Y');
         $site = Session::get('site', $course->site ?? 'ALG');
 
         // Charger les enveloppes pour le site
-        $enveloppes = Enveloppe::where('site', $site)->get();
+
+        if ($idenveloppe) {
+            $enveloppes = [Enveloppe::find($idenveloppe)];
+        }else{
+            $enveloppes = Enveloppe::where('site', $site)->get();
+        }
+        //dd($enveloppes);
         $env = [];
 
         foreach ($enveloppes as $enveloppe) {
@@ -1040,7 +1046,7 @@ class CourseController extends Controller
                 ->update([
                     'heure' => $parcours[$nbparcours]['heure_depart']
                 ]);
-                
+
             $ecart = proche($pointcourses,$env[$quelenv]->matrice[$i]['x'],$prec);
             $parcours[$nbparcours]['difference'] = $ecart-$prec;
             if(abs($ecart-$prec)<=50) $prec=$ecart;
@@ -1106,21 +1112,37 @@ class CourseController extends Controller
         $course->FU=$data['nbFU'] ?? 0;
         $course->patin=$data['nbPatin'] ?? 0;
         $course->save();
-
+        $enveloppes = Enveloppe::where('site', $course->site)->get();
+        $data['enveloppes'] = $enveloppes;
         //dd($data);
         return view('courses.show', $data);
     }
-    
+
+    public function changeEnveloppe(Request $request)
+    {
+        $course = Course::findOrFail($request->idcourse);
+        $course->idenveloppe = $request->idenveloppe;
+        $course->save();
+        $data = $this->buildCourseViewData($course, intval($request->idenveloppe));
+        $course->idenveloppe = $data['quelenv'] ?? null;
+        $course->gong=$data['nbGong'] ?? 0;
+        $course->klaxon=$data['nbKlaxon'] ?? 0;
+        $course->FU=$data['nbFU'] ?? 0;
+        $course->patin=$data['nbPatin'] ?? 0;
+        $course->save();
+        return redirect()->route('courses.show', $course->idcourse)->with('success', 'Enveloppe changée avec succès');
+    }
+
     public function depouillement($idcourse)
 {
     try {
         $course = Course::findOrFail($idcourse);
         $data = $this->buildCourseViewData($course);
-        
+
         // Ajouter les données de l'image directement pour éviter les problèmes de chemin
         $logosetramPath = public_path('logosetram.png');
         $cerclesetramPath = public_path('cerclesetram.png');
-        
+
         // Fonction pour encoder les images en base64
         $imageToBase64 = function($path) {
             if (file_exists($path)) {
@@ -1130,16 +1152,16 @@ class CourseController extends Controller
             }
             return null;
         };
-        
+
         // Fusionner toutes les données
         $viewData = array_merge($data, [
             'course' => $course,
             'logosetram' => $imageToBase64($logosetramPath),
             'cerclesetram' => $imageToBase64($cerclesetramPath),
         ]);
-        
+
         return view('courses.depouillement', $viewData);
-        
+
     } catch (\Exception $e) {
         // Pour le débogage, afficher l'erreur
         return response()->json([
@@ -1151,7 +1173,7 @@ class CourseController extends Controller
 }
 
 
-    
+
     /**
      * Show the form for editing the specified resource.
      */

@@ -44,7 +44,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/courses/bydate/{ladate}', [CourseController::class, 'bydate'])->name('courses.bydate');
     route::get('/courses/depouillement/{idcourse}', [CourseController::class, 'depouillement'])->name('courses.depouillement');
     Route::post('/courses/upload', [CourseController::class, 'upload'])->name('courses.upload');
-
+    Route::get('/courses/changeenveloppe', [CourseController::class, 'changeEnveloppe'])->name('courses.changeenveloppe');
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
