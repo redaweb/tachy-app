@@ -324,6 +324,13 @@
             <input type="submit" class="btn bg-primary" name="ok" value="Commenter">
         </form>
     </div>
+    <select onchange="changeEnveloppe({{ $course->idcourse }}, $('#enveloppe').val()); return false;" class="form-control" name="enveloppe" id="enveloppe">
+        <option value="">Sélectionnez une enveloppe</option>
+        @foreach($enveloppes as $enveloppe)
+            <option {{ $enveloppe->figer ? 'disabled' : '' }} value="{{ $enveloppe->idenveloppe }}" {{ $course->idenveloppe == $enveloppe->idenveloppe ? 'selected' : '' }}>{{ $enveloppe->nom }}</option>
+        @endforeach
+    </select>
+
     <!-- Cartes de Statistiques -->
     <div class="row">
         <!-- Informations Générales -->
@@ -647,6 +654,10 @@
 <script src="{{ asset('js/mongraph3.js') }}"></script>
 
 <script>
+    function changeEnveloppe(idcourse, idenveloppe) {
+        window.location.href = `/courses/changeenveloppe?idcourse=${idcourse}&idenveloppe=${idenveloppe}`;
+        return false;
+    }
     function sliderr(){
         $("#slider-range").slider("option","values",[$("#debut").val(),$("#fin").val()]);
     }

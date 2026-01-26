@@ -54,25 +54,16 @@
         white-space: nowrap;
     }
 
-    .badge-mineur {
+    .badge-FU {
         background-color: rgba(75, 192, 40, 0.9);
         color: white;
     }
 
-    .badge-moyen {
+    .badge-patin {
         background-color: rgba(255, 206, 86, 0.9);
         color: #212529;
     }
 
-    .badge-grave {
-        background-color: rgba(200, 50, 0, 0.9);
-        color: white;
-    }
-
-    .badge-majeur {
-        background-color: rgba(255, 50, 50, 0.9);
-        color: white;
-    }
 
     .loading-overlay {
         position: fixed;
@@ -192,13 +183,13 @@ document.addEventListener('alpine:init', () => {
         filtres: {
             debut: '',
             fin: '',
-            categories: ['mineur', 'moyen', 'grave', 'majeur'],
+            types: ['FU', 'patin'],
             voies: ['V1', 'V2'],
             conducteurs: [],
             rechercheConducteur: ''
         },
         donnees: {
-            exces: [],
+            freinages: [],
             courses: [],
             conducteursListe: []
         },
@@ -206,7 +197,7 @@ document.addEventListener('alpine:init', () => {
         debugConducteurs() {
             console.log('Conducteurs liste:', this.donnees.conducteursListe);
             console.log('Conducteurs sélectionnés:', this.filtres.conducteurs);
-            console.log('Données exces:', this.donnees.exces);
+            console.log('Données freinages:', this.donnees.freinages);
         },
 
         // Modifier la fonction init() pour formater correctement les conducteurs
@@ -237,8 +228,8 @@ document.addEventListener('alpine:init', () => {
 
                 // Extraire et formater correctement la liste des conducteurs
                 const conducteursSet = new Set();
-                this.donnees.exces.forEach(exce => {
-                    const conducteurStr = `${exce.matricule} ${exce.nom}`.trim();
+                this.donnees.freinages.forEach(freinage => {
+                    const conducteurStr = `${freinage.matricule} ${freinage.nom}`.trim();
                     if (conducteurStr) {
                         conducteursSet.add(conducteurStr);
                     }
@@ -263,7 +254,7 @@ document.addEventListener('alpine:init', () => {
                 this.filtres.conducteurs = this.donnees.conducteursListe.map(c => c.value);
 
                 console.log('Données chargées:', {
-                    exces: this.donnees.exces.length,
+                    freinages: this.donnees.freinages.length,
                     courses: this.donnees.courses.length,
                     conducteurs: this.donnees.conducteursListe.length
                 });
@@ -297,16 +288,16 @@ document.addEventListener('alpine:init', () => {
 
             // Filtrer les données côté client
             const donneesFiltrees = {
-                exces: this.donnees.exces.filter(exce => {
-                    const dateExce = new Date(exce.ladate);
+                freinages: this.donnees.freinages.filter(freinage => {
+                    const datefreinage = new Date(freinage.ladate);
                     const dateDebut = new Date(this.filtres.debut);
                     const dateFin = new Date(this.filtres.fin);
 
-                    return dateExce >= dateDebut &&
-                           dateExce <= dateFin &&
-                           this.filtres.voies.includes(exce.voie) &&
-                           this.filtres.categories.includes(exce.categorie) &&
-                           this.filtres.conducteurs.includes(exce.matricule + ' ' + exce.nom);
+                    return datefreinage >= dateDebut &&
+                           datefreinage <= dateFin &&
+                           this.filtres.voies.includes(freinage.voie) &&
+                           this.filtres.types.includes(freinage.type) &&
+                           this.filtres.conducteurs.includes(freinage.matricule + ' ' + freinage.nom);
                 }),
                 courses: this.donnees.courses.filter(course => {
                     const dateCourse = new Date(course.ladate);
@@ -321,7 +312,7 @@ document.addEventListener('alpine:init', () => {
             };
 
             console.log('Filtres appliqués:', {
-                excesFiltres: donneesFiltrees.exces.length,
+                freinagesFiltres: donneesFiltrees.freinages.length,
                 coursesFiltrees: donneesFiltrees.courses.length
             });
 
@@ -337,7 +328,7 @@ document.addEventListener('alpine:init', () => {
             console.log('Réinitialisation des filtres');
 
             // Réinitialiser les filtres
-            this.filtres.categories = ['mineur', 'moyen', 'grave', 'majeur'];
+            this.filtres.types = ['FU', 'patin'];
             this.filtres.voies = ['V1', 'V2'];
 
             // Réinitialiser à TOUS les conducteurs
@@ -361,7 +352,7 @@ document.addEventListener('alpine:init', () => {
                     debut: this.formatDatePourAPI(this.filtres.debut),
                     fin: this.formatDatePourAPI(this.filtres.fin),
                     conducteurs: this.filtres.conducteurs.join(','),
-                    categories: this.filtres.categories.join(','),
+                    types: this.filtres.types.join(','),
                     voies: this.filtres.voies.join(',')
                 });
 

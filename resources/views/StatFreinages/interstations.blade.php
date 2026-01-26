@@ -62,10 +62,8 @@
                             <th>Inter-station</th>
                             <th>Voie</th>
                             <th class="table-secondary">Total excès</th>
-                            <th>Excès mineur</th>
-                            <th>Excès moyen</th>
-                            <th>Excès grave</th>
-                            <th>Excès majeur</th>
+                            <th>FU</th>
+                            <th>patin</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,10 +77,8 @@
                                     </span>
                                 </td>
                                 <td class="table-secondary fw-bold" x-text="interstation.total"></td>
-                                <td x-text="interstation.mineur"></td>
-                                <td x-text="interstation.moyen"></td>
-                                <td x-text="interstation.grave"></td>
-                                <td x-text="interstation.majeur"></td>
+                                <td x-text="interstation.FU"></td>
+                                <td x-text="interstation.patin"></td>
                             </tr>
                         </template>
                     </tbody>
@@ -173,7 +169,7 @@
         text-align: right;
     }
 
-    .badge-mineur {
+    .badge-FU {
         background-color: rgba(75, 192, 40, 0.9);
         color: white;
         padding: 2px 6px;
@@ -181,25 +177,9 @@
         font-size: 0.75rem;
     }
 
-    .badge-moyen {
+    .badge-patin {
         background-color: rgba(255, 206, 86, 0.9);
         color: #333;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 0.75rem;
-    }
-
-    .badge-grave {
-        background-color: rgba(200, 50, 0, 0.9);
-        color: white;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 0.75rem;
-    }
-
-    .badge-majeur {
-        background-color: rgba(255, 50, 50, 0.9);
-        color: white;
         padding: 2px 6px;
         border-radius: 3px;
         font-size: 0.75rem;
@@ -245,38 +225,36 @@ function repartitionInterstations() {
             const filtres = Alpine.store('StatFreinages').filtres;
             const donnees = Alpine.store('StatFreinages').donnees;
 
-            if (!donnees.exces) {
-                return { exces: [] };
+            if (!donnees.freinages) {
+                return { freinages: [] };
             }
 
-            const excesFiltres = donnees.exces.filter(exce => {
-                const dateExce = new Date(exce.ladate);
+            const freinagesFiltres = donnees.freinages.filter(freinage => {
+                const datefreinage = new Date(freinage.ladate);
                 const dateDebut = new Date(filtres.debut);
                 const dateFin = new Date(filtres.fin);
 
-                return dateExce >= dateDebut &&
-                       dateExce <= dateFin &&
-                       filtres.voies.includes(exce.voie) &&
-                       filtres.categories.includes(exce.categorie) &&
-                       filtres.conducteurs.includes(exce.matricule + ' ' + exce.nom);
+                return datefreinage >= dateDebut &&
+                       datefreinage <= dateFin &&
+                       filtres.voies.includes(freinage.voie) &&
+                       filtres.types.includes(freinage.type) &&
+                       filtres.conducteurs.includes(freinage.matricule + ' ' + freinage.nom);
             });
 
-            return { exces: excesFiltres };
+            return { freinages: freinagesFiltres };
         },
 
         get interstationsData() {
             const interstationsMap = new Map();
 
-            this.donneesFiltrees.exces.forEach(exce => {
-                const key = exce.interstation;
+            this.donneesFiltrees.freinages.forEach(freinage => {
+                const key = freinage.interstation;
                 if (!interstationsMap.has(key)) {
                     interstationsMap.set(key, {
-                        nom: exce.interstation,
-                        voie: exce.voie,
-                        mineur: 0,
-                        moyen: 0,
-                        grave: 0,
-                        majeur: 0,
+                        nom: freinage.interstation,
+                        voie: freinage.voie,
+                        FU: 0,
+                        patin: 0,
                         total: 0
                     });
                 }
@@ -284,11 +262,9 @@ function repartitionInterstations() {
                 const interstation = interstationsMap.get(key);
                 interstation.total++;
 
-                switch(exce.categorie) {
-                    case 'mineur': interstation.mineur++; break;
-                    case 'moyen': interstation.moyen++; break;
-                    case 'grave': interstation.grave++; break;
-                    case 'majeur': interstation.majeur++; break;
+                switch(freinage.type) {
+                    case 'FU': interstation.FU++; break;
+                    case 'patin': interstation.patin++; break;
                 }
             });
 
@@ -310,9 +286,9 @@ function repartitionInterstations() {
             return this.interstationsData.slice(start, start + this.perPage);
         },
 
-        get excesForSelectedInterstation() {
+        get freinagesForSelectedInterstation() {
             if (!this.selectedInterstation) return [];
-            return this.donneesFiltrees.exces.filter(e =>
+            return this.donneesFiltrees.freinages.filter(e =>
                 e.interstation === this.selectedInterstation.inter.nom
             );
         },
@@ -386,24 +362,14 @@ function repartitionInterstations() {
                 labels: interstations.map(i => i.nom.length > 20 ? i.nom.slice(0, 20) + '…' : i.nom),
                 datasets: [
                     {
-                        label: 'Excès mineur',
-                        data: interstations.map(i => i.mineur),
+                        label: 'FU',
+                        data: interstations.map(i => i.FU),
                         backgroundColor: 'rgba(75,192,40,0.8)'
                     },
                     {
-                        label: 'Excès moyen',
-                        data: interstations.map(i => i.moyen),
+                        label: 'patin',
+                        data: interstations.map(i => i.patin),
                         backgroundColor: 'rgba(255,206,86,0.8)'
-                    },
-                    {
-                        label: 'Excès grave',
-                        data: interstations.map(i => i.grave),
-                        backgroundColor: 'rgba(200,50,0,0.8)'
-                    },
-                    {
-                        label: 'Excès majeur',
-                        data: interstations.map(i => i.majeur),
-                        backgroundColor: 'rgba(255,50,50,0.8)'
                     }
                 ]
             };
@@ -530,11 +496,9 @@ function repartitionInterstations() {
 
                 const statsHtml = `
                     <tr><th>Voie:</th><td>${found.inter.voie}</td></tr>
-                    <tr><th>Total excès:</th><td class="fw-bold">${found.data.total}</td></tr>
-                    <tr><th>Mineur:</th><td><span class="badge badge-mineur">${found.data.mineur}</span></td></tr>
-                    <tr><th>Moyen:</th><td><span class="badge badge-moyen">${found.data.moyen}</span></td></tr>
-                    <tr><th>Grave:</th><td><span class="badge badge-grave">${found.data.grave}</span></td></tr>
-                    <tr><th>Majeur:</th><td><span class="badge badge-majeur">${found.data.majeur}</span></td></tr>
+                    <tr><th>Total freinages:</th><td class="fw-bold">${found.data.total}</td></tr>
+                    <tr><th>FU:</th><td><span class="badge badge-FU">${found.data.FU}</span></td></tr>
+                    <tr><th>patin:</th><td><span class="badge badge-patin">${found.data.patin}</span></td></tr>
                 `;
 
                 document.getElementById('tooltipStats').innerHTML = statsHtml;
@@ -566,7 +530,7 @@ function repartitionInterstations() {
 
             const interstation = this.selectedInterstation.inter.nom;
             const voie = this.selectedInterstation.inter.voie;
-            const exces = this.excesForSelectedInterstation;
+            const freinages = this.freinagesForSelectedInterstation;
 
             // Vérifier si une modal existe déjà
             const existingModal = document.getElementById('modalInterstationDetails');
@@ -597,12 +561,12 @@ function repartitionInterstations() {
                                     </div>
                                     <div class="col-md-6">
                                         <p><strong>Nombre d'excès:</strong>
-                                            <span class="badge bg-secondary ms-2">${exces.length}</span>
+                                            <span class="badge bg-secondary ms-2">${freinages.length}</span>
                                         </p>
                                     </div>
                                 </div>
 
-                                ${exces.length > 0 ? `
+                                ${freinages.length > 0 ? `
                                 <div class="table-responsive mt-3">
                                     <table class="table table-sm table-hover">
                                         <thead>
@@ -615,18 +579,18 @@ function repartitionInterstations() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            ${exces.slice(0, 20).map(exce => `
+                                            ${freinages.slice(0, 20).map(freinage => `
                                                 <tr>
-                                                    <td>${this.formatDate(exce.ladate)}</td>
-                                                    <td>${exce.nom}</td>
+                                                    <td>${this.formatDate(freinage.ladate)}</td>
+                                                    <td>${freinage.nom}</td>
                                                     <td>
-                                                        <span class="badge ${this.getBadgeClass(exce.categorie)}">
-                                                            ${exce.categorie}
+                                                        <span class="badge ${this.getBadgeClass(freinage.type)}">
+                                                            ${freinage.type}
                                                         </span>
                                                     </td>
-                                                    <td class="small">${exce.detail || 'N/A'}</td>
+                                                    <td class="small">${freinage.detail || 'N/A'}</td>
                                                     <td>
-                                                        <button onclick="window.open('/courses/${exce.idcourse}', '_blank')"
+                                                        <button onclick="window.open('/courses/${freinage.idcourse}', '_blank')"
                                                                 class="btn btn-sm btn-outline-primary" title="Voir la course">
                                                             <i class="fas fa-external-link-alt"></i>
                                                         </button>
@@ -635,10 +599,10 @@ function repartitionInterstations() {
                                             `).join('')}
                                         </tbody>
                                     </table>
-                                    ${exces.length > 20 ? `
+                                    ${freinages.length > 20 ? `
                                     <div class="alert alert-info mt-2">
                                         <i class="fas fa-info-circle me-2"></i>
-                                        ${exces.length - 20} autres excès non affichés
+                                        ${freinages.length - 20} autres excès non affichés
                                     </div>` : ''}
                                 </div>
                                 ` : '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Aucun excès détaillé disponible pour cette période</div>'}
@@ -696,14 +660,12 @@ function repartitionInterstations() {
             ctx.fillText(message, canvas.width / 2, canvas.height / 2);
         },
 
-        getBadgeClass(categorie) {
+        getBadgeClass(type) {
             const classes = {
-                'mineur': 'badge-mineur',
-                'moyen': 'badge-moyen',
-                'grave': 'badge-grave',
-                'majeur': 'badge-majeur'
+                'FU': 'badge-FU',
+                'patin': 'badge-patin'
             };
-            return classes[categorie] || 'bg-secondary';
+            return classes[type] || 'bg-secondary';
         },
 
         formatDate(dateStr) {

@@ -1,10 +1,10 @@
 {{-- resources/views/StatFreinages/evolution.blade.php --}}
 @extends('StatFreinages.layout')
 
-@section('title', 'StatFreinages - Évolution par Excès')
+@section('title', 'StatFreinages - Évolution par freinage')
 
 @section('StatFreinages-content')
-<div x-data="evolutionExces()" x-init="init()">
+<div x-data="evolutionfreinages()" x-init="init()">
     <!-- Overlay de chargement -->
     <div x-show="$store.StatFreinages.loading" class="loading-overlay">
         <div class="text-center">
@@ -17,7 +17,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">
-            <i class="fas fa-chart-line me-2"></i>Évolution par excès
+            <i class="fas fa-chart-line me-2"></i>Évolution par freinage
         </h4>
         <div class="text-muted small" x-text="`Données du ${formatDate($store.StatFreinages.filtres.debut)} au ${formatDate($store.StatFreinages.filtres.fin)}`"></div>
     </div>
@@ -26,14 +26,14 @@
     <ul class="nav nav-tabs mb-4" id="evolutionTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
-                Tous les excès
+                Tous les freinages
             </button>
         </li>
     </ul>
     @endif
 
     <div class="tab-content">
-        <!-- Onglet Tous les excès -->
+        <!-- Onglet Tous les freinages -->
         <div class="tab-pane fade show active" id="all" role="tabpanel">
             <div class="card mb-4">
                 <div class="card-header bg-white">
@@ -51,7 +51,7 @@
             <div class="card">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">
-                        <i class="fas fa-table me-2"></i>Liste des excès
+                        <i class="fas fa-table me-2"></i>Liste des freinages
                     </h6>
                     <div class="d-flex align-items-center">
                         <span class="me-2 small">Afficher</span>
@@ -82,33 +82,23 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <template x-for="(exce, index) in paginatedExces" :key="exce.id">
+                                <template x-for="(freinage, index) in paginatedfreinages" :key="freinage.id">
                                     <tr>
-                                        <td x-text="formatDate(exce.ladate)"></td>
+                                        <td x-text="formatDate(freinage.ladate)"></td>
                                         <td>
                                             <span class="badge" :class="{
-                                                'badge-mineur': exce.categorie === 'mineur',
-                                                'badge-moyen': exce.categorie === 'moyen',
-                                                'badge-grave': exce.categorie === 'grave',
-                                                'badge-majeur': exce.categorie === 'majeur'
-                                            }" x-text="exce.categorie.charAt(0).toUpperCase() + exce.categorie.slice(1)"></span>
+                                                'badge-FU': freinage.type === 'FU',
+                                                'badge-patin': freinage.type === 'patin',
+                                            }" x-text="freinage.type.charAt(0).toUpperCase() + freinage.type.slice(1)"></span>
                                         </td>
-                                        <td x-text="exce.matricule"></td>
-                                        <td x-text="exce.RAME"></td>
-                                        <td x-text="exce.nom"></td>
-                                        <td x-text="exce.interstation"></td>
-                                        <td x-text="exce.detail"></td>
-                                        @if(auth()->user()->profil == 'DG' || in_array(auth()->user()->matricule, ['310040', '310020']) || auth()->user()->profil == 'managerR')
+                                        <td x-text="freinage.matricule"></td>
+                                        <td x-text="freinage.RAME"></td>
+                                        <td x-text="freinage.nom"></td>
+                                        <td x-text="freinage.interstation"></td>
+                                        <td x-text="freinage.detail"></td>
+
                                         <td>
-                                            <small>
-                                                <span x-text="regle(exce) ? 'non exclu' : 'exclu'"></span><br>
-                                                <span x-text="`Vitesse autorisée: ${exce.autorise}`"></span><br>
-                                                <span x-text="`Tolérance: ${tolerance(exce)}`"></span>
-                                            </small>
-                                        </td>
-                                        @endif
-                                        <td>
-                                            <button @click="ouvrirCourse(exce.idcourse)" class="btn btn-sm btn-outline-primary">
+                                            <button @click="ouvrirCourse(freinage.idcourse)" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-external-link-alt"></i>
                                             </button>
                                         </td>
@@ -119,7 +109,7 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center p-3">
-                        <div x-text="`Affichage de ${((currentPage - 1) * perPage) + 1} à ${Math.min(currentPage * perPage, totalExces)} sur ${totalExces} excès`"></div>
+                        <div x-text="`Affichage de ${((currentPage - 1) * perPage) + 1} à ${Math.min(currentPage * perPage, totalfreinages)} sur ${totalfreinages} freinages`"></div>
                         <nav>
                             <ul class="pagination pagination-sm mb-0">
                                 <li class="page-item" :class="{ disabled: currentPage === 1 }">
@@ -145,7 +135,7 @@
 
 @push('scripts')
 <script>
-function evolutionExces() {
+function evolutionfreinages() {
     return {
         store: Alpine.store('StatFreinages'),
         chart: null,
@@ -162,7 +152,7 @@ function evolutionExces() {
             window.addEventListener('StatFreinages-filtres-appliques', () => this.handleDataLoaded());
 
             // Premier chargement si données déjà présentes
-            if (this.store?.donnees?.excess) {
+            if (this.store?.donnees?.freinagess) {
                 this.handleDataLoaded();
             }
         },
@@ -174,32 +164,32 @@ function evolutionExces() {
         },
 
         // ─── Données calculées ────────────────────────────────────────
-        get excesFiltrees() {
-            return this.filtrerExcess();
+        get freinagesFiltrees() {
+            return this.filtrerfreinagess();
         },
 
-        get totalExces() {
-            return this.excesFiltrees.length;
+        get totalfreinages() {
+            return this.freinagesFiltrees.length;
         },
 
         get totalPages() {
-            return Math.ceil(this.totalExces / this.perPage) || 1;
+            return Math.ceil(this.totalfreinages / this.perPage) || 1;
         },
 
-        get paginatedExces() {
+        get paginatedfreinages() {
             const start = (this.currentPage - 1) * this.perPage;
-            return this.excesFiltrees.slice(start, start + this.perPage);
+            return this.freinagesFiltrees.slice(start, start + this.perPage);
         },
 
         // ─── Filtrage ─────────────────────────────────────────────────
-        filtrerExcess() {
-            if (!this.store?.donnees?.exces) return [];
+        filtrerfreinagess() {
+            if (!this.store?.donnees?.freinages) return [];
 
             const filtres = this.store.filtres;
-            let exces = this.store.donnees.exces;
-            console.log('Filtrage des excès avec les filtres:', filtres,exces);
+            let freinages = this.store.donnees.freinages;
+            console.log('Filtrage des freinages avec les filtres:', filtres,freinages);
             // Filtrage date + filtres classiques
-            exces = exces.filter(ex => {
+            freinages = freinages.filter(ex => {
                 const date = new Date(ex.ladate);
                 const debut = new Date(filtres.debut);
                 const fin   = new Date(filtres.fin);
@@ -207,25 +197,21 @@ function evolutionExces() {
                 return date >= debut &&
                        date <= fin &&
                        filtres.voies.includes(ex.voie) &&
-                       filtres.categories.includes(ex.categorie) &&
+                       filtres.types.includes(ex.type) &&
                        filtres.conducteurs.includes(ex.matricule + ' ' + ex.nom);
             });
 
 
 
             // Optionnel : tri par date descendant
-            return exces.sort((a, b) => new Date(b.ladate) - new Date(a.ladate));
+            return freinages.sort((a, b) => new Date(b.ladate) - new Date(a.ladate));
         },
 
-        // ─── Logique exclusion (à adapter selon votre règle réelle) ───
-        regleExclu(exces) {
-            // Exemple : à remplacer par votre vraie logique
-            return exces.autorise && (exces.vitesse || 0) <= (exces.autorise * 1.05); // tolérance 5% par ex.
-        },
+
 
         // ─── Gestion des graphiques ───────────────────────────────────
         initCharts() {
-            this.initChart('evolutionChart', this.prepareDataForChart(this.excesFiltrees));
+            this.initChart('evolutionChart', this.prepareDataForChart(this.freinagesFiltrees));
         },
 
         initChart(canvasId, chartData) {
@@ -245,7 +231,7 @@ function evolutionExces() {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, title: { display: true, text: "Nombre d'excès" } }
+                        y: { beginAtZero: true, title: { display: true, text: "Nombre de freinages" } }
                     },
                     plugins: {
                         legend: { display: false }
@@ -258,44 +244,36 @@ function evolutionExces() {
             }
         },
 
-        prepareDataForChart(excesList) {
-            console.log('Préparation des données pour le graphique avec', excesList, 'excès');
+        prepareDataForChart(freinagesList) {
+            console.log('Préparation des données pour le graphique avec', freinagesList, 'freinages');
             const labelsSet = new Set();
-            excesList.forEach(ex => {
+            freinagesList.forEach(ex => {
                 const date = new Date(ex.ladate);
                 const label = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                 labelsSet.add(label);
             });
             const labels = Array.from(labelsSet).sort();
-            const mineurByDate = {};
-            const moyenByDate = {};
-            const graveByDate = {};
-            const majeurByDate = {};
+            const FUByDate = {};
+            const patinByDate = {};
             labels.forEach(label => {
-                mineurByDate[label] = 0;
-                moyenByDate[label] = 0;
-                graveByDate[label] = 0;
-                majeurByDate[label] = 0;
+                FUByDate[label] = 0;
+                patinByDate[label] = 0;
             });
-            excesList.forEach(ex => {
+            freinagesList.forEach(ex => {
                 const date = new Date(ex.ladate);
                 const label = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                if (ex.categorie === 'mineur') mineurByDate[label]++;
-                else if (ex.categorie === 'moyen') moyenByDate[label]++;
-                else if (ex.categorie === 'grave') graveByDate[label]++;
-                else if (ex.categorie === 'majeur') majeurByDate[label]++;
+                if (ex.type === 'FU') FUByDate[label]++;
+                else if (ex.type === 'patin') patinByDate[label]++;
             });
             // Compter par catégorie
             const counts = {
-                mineur: 0,
-                moyen: 0,
-                grave: 0,
-                majeur: 0
+                FU: 0,
+                patin: 0,
             };
 
-            excesList.forEach(ex => {
-                if (counts.hasOwnProperty(ex.categorie)) {
-                    counts[ex.categorie]++;
+            freinagesList.forEach(ex => {
+                if (counts.hasOwnProperty(ex.type)) {
+                    counts[ex.type]++;
                 }
             });
 
@@ -303,34 +281,18 @@ function evolutionExces() {
                 labels:labels,
                 datasets: [
                     {
-                        label: 'Mineur',
-                        data: labels.map(label => mineurByDate[label]),
+                        label: 'FU',
+                        data: labels.map(label => FUByDate[label]),
                         borderColor: 'rgba(75, 192, 192, 1)',
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         fill: false,
                         tension: 0.1
                     },
                     {
-                        label: 'Moyen',
-                        data: labels.map(label => moyenByDate[label]),
+                        label: 'patin',
+                        data: labels.map(label => patinByDate[label]),
                         borderColor: 'rgba(255, 206, 86, 1)',
                         backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                        fill: false,
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Grave',
-                        data: labels.map(label => graveByDate[label]),
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        fill: false,
-                        tension: 0.1
-                    },
-                    {
-                        label: 'Majeur',
-                        data: labels.map(label => majeurByDate[label]),
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
                         fill: false,
                         tension: 0.1
                     }

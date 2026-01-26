@@ -63,7 +63,7 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             <td>
-                                <a href="{{ route('courses.show', $course->idcourse) }}" class="btn btn-sm btn-primary" title="Voir les détails">
+                                <a href="{{ route('courses.show', $course->idcourse) }}" target="_blank" class="btn btn-sm btn-primary" title="Voir les détails">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </td>
