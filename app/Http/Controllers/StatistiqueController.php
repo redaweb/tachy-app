@@ -141,7 +141,7 @@ class StatistiqueController extends Controller
                     'debut' => $course->debut,
                     'fin' => $course->fin,
                     'code' => $course->code !== null ? str_pad($course->code, 4, '0', STR_PAD_LEFT) : null,
-                    'discom' => $course->dis_com,
+                    'discom' => $course->distance,
                     'rame' => $course->RAME,
                     'FU' => $course->FU,
                     'klaxon' => $course->klaxon,
