@@ -82,7 +82,7 @@
             <h2><i class="fas fa-tachometer-alt me-2"></i>Tachy App</h2>
             <p class="mb-0 mt-2">@yield('header-text', 'Connexion à votre compte')</p>
         </div>
-        
+
         <div class="auth-body">
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
