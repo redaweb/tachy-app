@@ -259,6 +259,9 @@
                     <i class="fas fa-calendar me-1"></i>
                     {{ $course->ladate ? $course->ladate->format('d/m/Y') : 'Date non définie' }}
                 </div>
+                <a href="{{ route('courses.depouillement', $course->idcourse) }}" class="btn btn-primary" title="Fiche de dépouillement à imprimer">
+                    <i class="fas fa-print me-1"></i>Fiche de dépouillement
+                </a>
                 <button class="btn btn-success" id="btn-enregistrer">
                         <i class="fas fa-save me-2"></i>Enregistrer
                 </button>
@@ -311,7 +314,6 @@
 
             <div class="d-flex gap-2 mb-3">
                 <input type="submit" class="btn btn-primary" name="ok" value="Enregistrer">
-                <input type="button" class="btn btn-primary" value="Imprimer" onclick="window.print()">
             </div>
         </form>
 

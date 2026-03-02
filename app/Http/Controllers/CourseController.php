@@ -6,6 +6,7 @@ use App\Helpers\EnveloppeHelper;
 use Spatie\Browsershot\Browsershot;
 use Spatie\Browsershot\Exceptions\CouldNotTakeBrowsershot;
 use App\Models\Course;
+use App\Models\Freinage;
 use App\Models\CourseCsv;
 use App\Models\Enveloppe;
 use App\Models\Exces;
@@ -1014,7 +1015,17 @@ class CourseController extends Controller
                 $nbbrake++;
             }
         }
-
+        Freinage::where('idcourse', $course->idcourse)->delete();
+        foreach ($brake as $item) {
+            Freinage::create([
+                'type' => $item['type'],
+                'vitesse' => $item['vitesse'],
+                'interstation' => $item['interstation'],
+                'detail' => $item['detail'],
+                'heure' => $item['heure'],
+                'idcourse' => $course->idcourse,
+            ]);
+        }
         // temps de parcours relevé
         $f=0;
         $parcours=[];
