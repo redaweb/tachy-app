@@ -1016,12 +1016,16 @@ class CourseController extends Controller
             }
         }
         Freinage::where('idcourse', $course->idcourse)->delete();
+
         foreach ($brake as $item) {
+            $detail = is_string($item['detail'])
+                ? mb_convert_encoding($item['detail'], 'UTF-8', 'UTF-8')
+                : $item['detail'];
             Freinage::create([
                 'type' => $item['type'],
                 'vitesse' => $item['vitesse'],
                 'interstation' => $item['interstation'],
-                'detail' => $item['detail'],
+                'details' => $detail,
                 'heure' => $item['heure'],
                 'idcourse' => $course->idcourse,
             ]);

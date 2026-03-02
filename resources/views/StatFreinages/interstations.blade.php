@@ -588,7 +588,7 @@ function repartitionInterstations() {
                                                             ${freinage.type}
                                                         </span>
                                                     </td>
-                                                    <td class="small">${freinage.detail || 'N/A'}</td>
+                                                    <td class="small">${freinage.details || 'N/A'}</td>
                                                     <td>
                                                         <button onclick="window.open('/courses/${freinage.idcourse}', '_blank')"
                                                                 class="btn btn-sm btn-outline-primary" title="Voir la course">
