@@ -262,6 +262,13 @@
                 <a href="{{ route('courses.depouillement', $course->idcourse) }}" class="btn btn-primary" title="Fiche de dépouillement à imprimer">
                     <i class="fas fa-print me-1"></i>Fiche de dépouillement
                 </a>
+                <select onchange="changeEnveloppe({{ $course->idcourse }}, $('#enveloppe').val()); return false;" class="form-control" name="enveloppe" id="enveloppe">
+                    <option value="">Sélectionnez une enveloppe</option>
+                    @foreach($enveloppes as $enveloppe)
+                        <option {{ $enveloppe->figer ? 'disabled' : '' }} value="{{ $enveloppe->idenveloppe }}" {{ $course->idenveloppe == $enveloppe->idenveloppe ? 'selected' : '' }}>{{ $enveloppe->nom }}</option>
+                    @endforeach
+                </select>
+
                 <button class="btn btn-success" id="btn-enregistrer">
                         <i class="fas fa-save me-2"></i>Enregistrer
                 </button>
@@ -326,12 +333,7 @@
             <input type="submit" class="btn bg-primary" name="ok" value="Commenter">
         </form>
     </div>
-    <select onchange="changeEnveloppe({{ $course->idcourse }}, $('#enveloppe').val()); return false;" class="form-control" name="enveloppe" id="enveloppe">
-        <option value="">Sélectionnez une enveloppe</option>
-        @foreach($enveloppes as $enveloppe)
-            <option {{ $enveloppe->figer ? 'disabled' : '' }} value="{{ $enveloppe->idenveloppe }}" {{ $course->idenveloppe == $enveloppe->idenveloppe ? 'selected' : '' }}>{{ $enveloppe->nom }}</option>
-        @endforeach
-    </select>
+
 
     <!-- Cartes de Statistiques -->
     <div class="row">

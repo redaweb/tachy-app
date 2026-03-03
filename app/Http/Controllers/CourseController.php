@@ -1080,11 +1080,11 @@ class CourseController extends Controller
         $nbgrave = array_count_values(array_column($exait, 'categorie'))['grave'] ?? 0;
         $nbmoyen = array_count_values(array_column($exait, 'categorie'))['moyen'] ?? 0;
         $nbmineur = array_count_values(array_column($exait, 'categorie'))['mineur'] ?? 0;
-        foreach ($pointcourses as $point) {
+        foreach ($pointcourses as $index => $point) {
             $nbGong += $point['gong'] ?? 0;
             $nbKlaxon += $point['klaxon'] ?? 0;
-            $nbFU += $point['FU'] ?? 0;
-            $nbPatin += $point['patin'] ?? 0;
+            if($index===0 || $point['FU']!=$pointcourses[$index-1]['FU'])$nbFU += $point['FU'] ?? 0;
+            if($index===0 || $point['patin']!=$pointcourses[$index-1]['patin'])$nbPatin += $point['patin'] ?? 0;
         }
         return compact(
             'parcours',
