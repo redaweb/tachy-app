@@ -44,13 +44,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/courses/bydate/{ladate}', [CourseController::class, 'bydate'])->name('courses.bydate');
     route::get('/courses/depouillement/{idcourse}', [CourseController::class, 'depouillement'])->name('courses.depouillement');
     Route::post('/courses/upload', [CourseController::class, 'upload'])->name('courses.upload');
-    Route::get('/courses/changeenveloppe', [CourseController::class, 'changeEnveloppe'])->name('courses.changeenveloppe');
+    //Route::get('/courses/changeenveloppe', [CourseController::class, 'changeEnveloppe'])->name('courses.changeenveloppe');
+    Route::get('/courses/cancel/{idcourse}',[CourseController::class, 'cancel'])->name('courses.cancel');
+    Route::get('/courses/{course}/{idenveloppe?}',[CourseController::class, 'show'])->name('courses.show');
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Routes des ressources
     Route::resource('conducteurs', ConducteurController::class);
-    Route::resource('courses', CourseController::class);
+    Route::resource('courses', CourseController::class)->except(['show','cancel']);
     Route::resource('exces', ExcesController::class);
 
     // Statistiques

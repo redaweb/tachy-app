@@ -8,6 +8,7 @@ use Spatie\Browsershot\Exceptions\CouldNotTakeBrowsershot;
 use App\Models\Course;
 use App\Models\Freinage;
 use App\Models\CourseCsv;
+use App\Models\Conducteur;
 use App\Models\Enveloppe;
 use App\Models\Exces;
 use App\Models\Journal;
@@ -609,6 +610,29 @@ class CourseController extends Controller
 
         return response()->json(['nbControles' => $nbControles]);
     }
+
+    public function cancel($idcourse)
+    {
+        $course = Course::findOrFail($idcourse);
+        $course->update(['valide' => false]);
+
+        // Journalisation
+        Journal::create([
+            'matricule' => Auth::user()->matricule,
+            'nom' => Auth::user()->name,
+            'ladate' => now()->toDateString(), // Format date seulement
+            'heure' => now()->format('H:i:s'), // Format heure seulement
+            'action' => 'annuler la course',
+            'detail' => (string) $idcourse, // Stocker l'id de la course dans detail
+            'site' => session('site', 'ALG')
+        ]);
+
+        return redirect()->back()->with('success', 'La course a été annulée avec succès.');
+    }
+
+        /**
+        * Display a listing of the resource.
+        */
     public function index()
     {
         return view('courses.index');
@@ -763,7 +787,7 @@ class CourseController extends Controller
         // Calculer l'enveloppe appropriée
         $dec = 10000;
         $quelenv = null;
-
+        //dd($env);
         if (isset($getdebut)) {
             if (!$course->valide) {
                 foreach ($env as $lenv) {
@@ -946,6 +970,7 @@ class CourseController extends Controller
 
             $item["dist"] = $item["fin"] - $item["debut"];
             // Insérer dans la base de données
+            //dd($item);
             if($item["passe"]) Exces::create([
                 'idcourse' => $course->idcourse,
                 'aire' => round($item["aire"] ?? 0, 2),
@@ -1086,6 +1111,7 @@ class CourseController extends Controller
             if($index===0 || $point['FU']!=$pointcourses[$index-1]['FU'])$nbFU += $point['FU'] ?? 0;
             if($index===0 || $point['patin']!=$pointcourses[$index-1]['patin'])$nbPatin += $point['patin'] ?? 0;
         }
+
         return compact(
             'parcours',
             'brake',
@@ -1115,9 +1141,11 @@ class CourseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show( Course $course)
+    public function show( Course $course, $idenveloppe = null)
     {
-        $data = $this->buildCourseViewData($course);
+        //dd($idenveloppe);
+        $data = $this->buildCourseViewData($course, intval($idenveloppe));
+        //dd($data);
         if ($data instanceof \Illuminate\Http\RedirectResponse) {
             return $data;
         }
@@ -1130,6 +1158,8 @@ class CourseController extends Controller
         $enveloppes = Enveloppe::where('site', $course->site)->get();
         $data['enveloppes'] = $enveloppes;
         //dd($data);
+        $conducteurs = Conducteur::where('site', $course->site)->get();
+        $data['conducteurs'] = $conducteurs;
         return view('courses.show', $data);
     }
 
@@ -1145,7 +1175,7 @@ class CourseController extends Controller
         $course->FU=$data['nbFU'] ?? 0;
         $course->patin=$data['nbPatin'] ?? 0;
         $course->save();
-        return redirect()->route('courses.show', $course->idcourse)->with('success', 'Enveloppe changée avec succès');
+        return redirect()->route('courses.show', [$course->idcourse,$course->idenveloppe])->with('success', 'Enveloppe changée avec succès');
     }
 
     public function depouillement($idcourse)

@@ -66,6 +66,9 @@
                                 <a href="{{ route('courses.show', $course->idcourse) }}" target="_blank" class="btn btn-sm btn-primary" title="Voir les détails">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                <a href="{{ route('courses.cancel', $course->idcourse) }}" class="btn btn-sm btn-danger" title="Annuler la course" onclick="return confirm('Confirmez l\'annulation de la course ?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
                             </td>
                         </tr>
                     @endforeach

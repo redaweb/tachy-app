@@ -248,29 +248,52 @@
     <!-- En-tête -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <!-- Titre et description -->
                 <div>
                     <h1 class="h3 mb-0" style="color: var(--primary-color);">
                         <i class="fas fa-chart-line me-2"></i>Détails de la Course
                     </h1>
                     <p class="text-muted mb-0">Analyse détaillée des performances et des excès de vitesse</p>
                 </div>
+
+                <!-- Badge date -->
                 <div class="info-badge">
                     <i class="fas fa-calendar me-1"></i>
                     {{ $course->ladate ? $course->ladate->format('d/m/Y') : 'Date non définie' }}
                 </div>
-                <a href="{{ route('courses.depouillement', $course->idcourse) }}" class="btn btn-primary" title="Fiche de dépouillement à imprimer">
+
+                <!-- Bouton fiche dépouillement -->
+                <a href="{{ route('courses.depouillement', $course->idcourse) }}"
+                    class="btn btn-primary"
+                    title="Fiche de dépouillement à imprimer"
+                    target="_blank"
+                >
                     <i class="fas fa-print me-1"></i>Fiche de dépouillement
                 </a>
-                <select onchange="changeEnveloppe({{ $course->idcourse }}, $('#enveloppe').val()); return false;" class="form-control" name="enveloppe" id="enveloppe">
+
+                <!-- Sélecteur enveloppe -->
+                @if(!$course->valide)
+                <select onchange="changeEnveloppe({{ $course->idcourse }}, this.value); return false;"
+                        class="form-control"
+                        name="enveloppe"
+                        id="enveloppe">
                     <option value="">Sélectionnez une enveloppe</option>
                     @foreach($enveloppes as $enveloppe)
-                        <option {{ $enveloppe->figer ? 'disabled' : '' }} value="{{ $enveloppe->idenveloppe }}" {{ $course->idenveloppe == $enveloppe->idenveloppe ? 'selected' : '' }}>{{ $enveloppe->nom }}</option>
+                        @if (!$enveloppe->figer)
+                        <option {{ $enveloppe->figer ? 'disabled' : '' }}
+                                value="{{ $enveloppe->idenveloppe }}"
+                                {{ $course->idenveloppe == $enveloppe->idenveloppe ? 'selected' : '' }}>
+                            {{ $enveloppe->nom }}
+                        </option>
+                        @endif
+
                     @endforeach
                 </select>
-
+                @endif
+                <!-- Bouton enregistrer -->
                 <button class="btn btn-success" id="btn-enregistrer">
-                        <i class="fas fa-save me-2"></i>Enregistrer
+                    <i class="fas fa-save me-2"></i>Enregistrer
                 </button>
             </div>
         </div>
@@ -289,18 +312,9 @@
                        oninput="nbcontrol($('#matricule').val().substr(0,6))"
                        onchange="nbcontrol($('#matricule').val().substr(0,6))">
                 <datalist id="cdrs">
-                    <option>220361 KEHAL Facih</option>
-                    <option>220417 MADANI Abdelaziz</option>
-                    <option>310055 MOSTEFAI Nour-Eddine</option>
-                    <option>310063 LAHMAR Mohamed Zakaria</option>
-                    <option>310091 KHALIFA Mohamed Amine</option>
-                    <option>310093 BELLOUTI Abdessamad</option>
-                    <option>310094 OUHIBI Ahmed</option>
-                    <option>310096 BOUHARAOUA Boumediene</option>
-                    <option>310097 SOLTANI Mohamed Amine</option>
-                    <option>310099 IMAM Belabbes</option>
-                    <option>310101 ZERROUKI Sofiane</option>
-                    <!-- Ajoutez les autres options ici -->
+                    @foreach ($conducteurs as $item)
+                        <option value="{{ $item->matricule }} {{ $item->nom }} {{ $item->prenom }}"></option>
+                    @endforeach
                 </datalist>
             </div>
 
@@ -659,7 +673,7 @@
 
 <script>
     function changeEnveloppe(idcourse, idenveloppe) {
-        window.location.href = `/courses/changeenveloppe?idcourse=${idcourse}&idenveloppe=${idenveloppe}`;
+        window.location.href = `/courses/${idcourse}/${idenveloppe}`;
         return false;
     }
     function sliderr(){
