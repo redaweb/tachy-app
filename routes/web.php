@@ -7,6 +7,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EnveloppeController;
 use App\Http\Controllers\ExcesController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StatFreinageController;
 use App\Http\Controllers\StatistiqueController;
@@ -54,6 +55,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('conducteurs', ConducteurController::class);
     Route::resource('courses', CourseController::class)->except(['show','cancel']);
     Route::resource('exces', ExcesController::class);
+    Route::resource('users', UserController::class);
+    // Dans routes/web.php, après Route::resource('users', UserController::class);
+    Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
     // Statistiques
     Route::prefix('statistiques')->name('statistiques.')->group(function () {

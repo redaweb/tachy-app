@@ -164,11 +164,19 @@
                                 <i class="fas fa-map me-2"></i>Enveloppes
                             </a>
                         </li>
+                        {{-- Dans resources/views/layouts/app.blade.php, dans la section sidebar --}}
+                        @if(in_array(auth()->user()->profil, ['ladmin', 'superadmin', 'DG']) || true)
                         <li class="nav-item">
+                            <a class="nav-link" href="{{ route('users.index') }}">
+                                <i class="fas fa-users-cog me-2"></i>Utilisateurs
+                            </a>
+                        </li>
+                        @endif
+                        <!--li class="nav-item">
                             <a class="nav-link" href="{{ route('exces.index') }}">
                                 <i class="fas fa-exclamation-triangle me-2"></i>Excès
                             </a>
-                        </li>
+                        </li-->
                         @if(in_array(auth()->user()->profil, ['DG', 'managerR', 'ADMIN', 'superadmin']) ||
                             in_array(auth()->user()->matricule, ['310040', '310020']))
                         <li class="nav-item dropdown">
@@ -205,7 +213,7 @@
                                 <li><a class="dropdown-item" href="{{ route('stat-freinages.evolution') }}">Évolution par excès</a></li>
                                 <li><a class="dropdown-item" href="{{ route('stat-freinages.conducteurs') }}">Répartition par conducteur</a></li>
                                 <li><a class="dropdown-item" href="{{ route('stat-freinages.interstations') }}">Répartition par inter-station</a></li>
-                                
+
                                 @if(in_array(auth()->user()->matricule, ['310040', '310020']) ||
                                     auth()->user()->profil === 'DG' ||
                                     auth()->user()->profil === 'managerR')
