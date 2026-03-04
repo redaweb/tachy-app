@@ -58,6 +58,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('users', UserController::class);
     // Dans routes/web.php, après Route::resource('users', UserController::class);
     Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    // Dans routes/web.php, après Route::resource('conducteurs', ConducteurController::class);
+    Route::get('/conducteurs/search/api', [ConducteurController::class, 'search'])->name('conducteurs.search');
+    // Dans routes/web.php, après le groupe des enveloppes
+    Route::get('/enveloppes/export', [EnveloppeController::class, 'export'])->name('enveloppes.export');
 
     // Statistiques
     Route::prefix('statistiques')->name('statistiques.')->group(function () {
