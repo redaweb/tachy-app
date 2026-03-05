@@ -19,6 +19,7 @@ class EnveloppeController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        //$this->middleware('web'); // Ajoutez ceci
     }
 
     /**
@@ -78,7 +79,9 @@ class EnveloppeController extends Controller
         if (in_array($sortField, $allowedSortFields)) {
             $query->orderBy($sortField, $sortDirection);
         }
-
+            // Filtrer par site actuel
+            $site=Session::get('site');
+            $query->where('site', $site);
         // Pagination de 10 éléments par page
         $enveloppes = $query->paginate(10);
 
@@ -133,7 +136,7 @@ class EnveloppeController extends Controller
             'distance.numeric' => 'La distance doit être un nombre.',
         ]);
 
-        $site = $this->getSite($request);
+        $site = Session::get('site');
         $file = $request->file('fichier');
         $filename = $file->getClientOriginalName();
 
@@ -189,7 +192,7 @@ class EnveloppeController extends Controller
     public function destroy($id)
     {
         $enveloppe = Enveloppe::findOrFail($id);
-        $site = $this->getSite();
+        $site = Session::get('site');
 
         // Vérifier que l'enveloppe appartient au site actuel
         if ($enveloppe->site !== $site) {
@@ -247,19 +250,9 @@ class EnveloppeController extends Controller
 
         try {
             $enveloppe = Enveloppe::findOrFail($validated['enve']);
-            $freeze = $validated['check'] === 'faux';
+            $freeze = $validated['check'] === 'vrai';
 
-            // Vérifier que l'enveloppe appartient au site actuel
-            if ($enveloppe->site !== $this->getSite()) {
-                if ($request->expectsJson() || $request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Cette enveloppe n\'appartient pas au site sélectionné.'
-                    ], 403);
-                }
-                return redirect()->back()
-                    ->withErrors(['error' => 'Cette enveloppe n\'appartient pas au site sélectionné.']);
-            }
+
 
             $enveloppe->update(['figer' => $freeze]);
 
@@ -301,7 +294,7 @@ class EnveloppeController extends Controller
             'nom' => 'required|string',
         ]);
 
-        $site = $this->getSite();
+        $site = Session::get('site');
         $filename = $request->nom;
         $path = storage_path("app/enveloppe/{$site}/{$filename}");
 
@@ -338,22 +331,7 @@ class EnveloppeController extends Controller
     /**
      * Obtenir le site depuis la session ou la requête
      */
-    private function getSite(Request $request = null): string
-    {
-        $site = Session::get('site');
 
-        if ($request && $request->has('site')) {
-            $site = $request->get('site');
-            Session::put('site', $site);
-        }
-
-        if (!$site) {
-            $site = Auth::user()->site ?? 'ALG';
-            Session::put('site', $site);
-        }
-
-        return $site;
-    }
 
     /**
      * Vérifier si l'utilisateur est admin
@@ -424,7 +402,8 @@ class EnveloppeController extends Controller
         }
 
         // Filtrer par site actuel
-        $site = $this->getSite($request);
+        $site=Session::get('site');
+        dd($site);
         $query->where('site', $site);
 
         $enveloppes = $query->orderBy('importation', 'desc')->get();

@@ -439,6 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
         switch_.addEventListener('change', function() {
             const enveloppeId = this.dataset.enveloppeId;
             const isFrozen = this.checked;
+            //alert('Switch cliqué: ' + enveloppeId + ' - ' + (isFrozen ? 'Archiver' : 'Désarchiver'));
             const check = isFrozen ? "vrai" : "faux";
             const previousState = !isFrozen;
             const row = this.closest('tr');
@@ -457,6 +458,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Envoyer la requête
             fetch('{{ route("enveloppes.toggle-freeze") }}', {
                 method: 'POST',
+                headers: {
+                    'Accept': 'application/json',  // Important !
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
                 body: formData
             })
             .then(response => response.json())
