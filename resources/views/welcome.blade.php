@@ -80,7 +80,7 @@
                         @error('password')<p class="error">{{ $message }}</p>@enderror
                     </div>
 
-                    <label class="options" for="remember"><input id="remember" type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}> Se souvenir de moi</label>
+                    <!--label class="options" for="remember"><input id="remember" type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}> Se souvenir de moi</label-->
                     <button class="submit-button" type="submit">Se connecter</button>
                 </form>
 
