@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Connexion') - Tachy App</title>
+    <title>@yield('title', 'Connexion') - Dorcas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2b3593 0%, #2dc4ea 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -17,17 +17,27 @@
         }
         .auth-container {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 18px;
+            box-shadow: 0 18px 45px rgba(43, 53, 147, 0.28);
             overflow: hidden;
             max-width: 450px;
             width: 100%;
         }
         .auth-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #2b3593;
+            color: #fff;
             padding: 2rem;
             text-align: center;
+            border-bottom: 6px solid #fdcf41;
+        }
+        .auth-logo {
+            display: block;
+            width: min(180px, 70%);
+            height: auto;
+            margin: 0 auto 1rem;
+            background: #fff;
+            border-radius: .5rem;
+            padding: .5rem .75rem;
         }
         .auth-header h2 {
             margin: 0;
@@ -37,11 +47,11 @@
             padding: 2rem;
         }
         .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: #2dc4ea;
+            box-shadow: 0 0 0 0.2rem rgba(45, 196, 234, 0.25);
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #2b3593;
             border: none;
             padding: 0.75rem;
             font-weight: 600;
@@ -49,7 +59,8 @@
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            background: #2dc4ea;
+            box-shadow: 0 5px 15px rgba(45, 196, 234, 0.4);
         }
         .input-group-text {
             background-color: #f8f9fa;
@@ -60,7 +71,7 @@
         }
         .form-control:focus + .input-group-text,
         .form-control:focus {
-            border-color: #667eea;
+            border-color: #2dc4ea;
         }
         .auth-footer {
             text-align: center;
@@ -68,7 +79,7 @@
             color: #6c757d;
         }
         .auth-footer a {
-            color: #667eea;
+            color: #2b3593;
             text-decoration: none;
         }
         .auth-footer a:hover {
@@ -79,7 +90,8 @@
 <body>
     <div class="auth-container">
         <div class="auth-header">
-            <h2><i class="fas fa-tachometer-alt me-2"></i>Tachy App</h2>
+            <img class="auth-logo" src="{{ asset('images/logosetram.png') }}" alt="Logo SETRAM">
+            <h2>Dorcas</h2>
             <p class="mb-0 mt-2">@yield('header-text', 'Connexion à votre compte')</p>
         </div>
 
@@ -110,7 +122,6 @@
     @yield('scripts')
 </body>
 </html>
-
 
 
 

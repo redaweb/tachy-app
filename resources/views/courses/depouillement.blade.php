@@ -3,153 +3,381 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapport de contrôle</title>
+
+    @php
+        $ville = session('site', 'ORN');
+        $referenceCode = $ville . '-DEX-RA-' . sprintf('%04d', $course->code ?? 0) . '-' . ($lannee ?? date('Y'));
+    @endphp
+
+    <title>{{ $referenceCode }}</title>
 
     <link rel="stylesheet" href="{{ asset('css/jquery-ui.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: parisine-office-std, sans-serif;
-            background: #fff;
-            color: #222;
-            -webkit-print-color-adjust: exact;
+        /* ========== IMPRESSION PAYSAGE ========== */
+        @page {
+            size: A4 landscape;
+            margin: 8mm 10mm;
         }
 
-        .print-container {
-            max-width: 1220px;
-            margin: auto;
-            padding: 10px 14px;
+        * {
             box-sizing: border-box;
         }
 
-        /* -------- PAGE BREAK -------- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Parisine Office Std', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #fff;
+            color: #1e293b;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .print-container {
+            width: 100%;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 5px 0;
+        }
+
+        /* -------- SAUTS DE PAGE -------- */
         .saut-page {
             page-break-after: always;
             break-after: page;
             height: 0;
             visibility: hidden;
+            display: block;
         }
 
-        .no-break-inside {
+        .no-break {
             page-break-inside: avoid;
             break-inside: avoid;
         }
 
         /* -------- HEADER -------- */
         .header-section {
-            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 55px;
             margin-bottom: 10px;
-            overflow: hidden;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 6px;
         }
 
         .header-section img {
-            height: 50px;
+            height: 44px;
+            object-fit: contain;
         }
 
-        /* -------- TITRE -------- */
+        /* -------- BANNER TITRE & CODE -------- */
         .main-title-container {
-            display: table;
-            width: 100%;
-            background: #f4fbfa;
-            border: 1px solid #1fb2ac;
-            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #2a3b90 0%, #1e296b 100%);
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 6px;
             margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .section-title {
-            display: table-cell;
             font-size: 15px;
-            font-weight: bold;
-            color: #1fb2ac;
-            vertical-align: middle;
+            font-weight: 700;
+            letter-spacing: 0.3px;
         }
 
         .doc-code {
-            display: table-cell;
-            text-align: right;
-            font-size: 12px;
-            font-weight: bold;
-            color: #004081;
-            vertical-align: middle;
-        }
-
-        /* -------- BLOCS -------- */
-        .info-container,
-        .radio-container,
-        .stats-container {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 10px;
             border-radius: 4px;
-            padding: 8px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* -------- REFERENCE & CITES -------- */
+        .reference-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #0284c7;
+            padding: 6px 12px;
+            border-radius: 4px;
             margin-bottom: 8px;
             font-size: 12px;
         }
 
-        .reference-container {
-            background: #e3f2fd;
-            border-left: 4px solid #1fb2ac;
-            padding: 6px 10px;
-            font-size: 12px;
+        .reference-title {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .reference-code {
+            color: #0284c7;
+            font-weight: 700;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        /* BADGES VILLES */
+        .villes-grid {
+            display: flex;
+            gap: 5px;
             margin-bottom: 8px;
+        }
+
+        .ville-badge {
+            flex: 1;
+            text-align: center;
+            padding: 5px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #64748b;
+        }
+
+        .ville-badge.active {
+            background: #2a3b90;
+            color: #ffffff;
+            border-color: #2a3b90;
+            box-shadow: 0 2px 4px rgba(42, 59, 144, 0.2);
+        }
+
+        /* -------- BLOCS CARTES D'INFORMATIONS -------- */
+        .info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 12px;
+            margin-bottom: 6px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 1px;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        /* -------- GRAPHIC CANVAS -------- */
+        .canvas-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: #fafafa;
+            padding: 6px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        canvas#minigraphe {
+            width: 100%;
+            max-width: 1120px;
+            height: 260px;              /* Réduit pour le paysage */
+            border-radius: 4px;
+        }
+
+        /* -------- CARTES STATISTIQUES -------- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-top: 3px solid #2a3b90;
+            border-radius: 6px;
+            padding: 6px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .stat-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .stat-number {
+            font-size: 16px;
+            font-weight: 800;
+            color: #2a3b90;
         }
 
         /* -------- TABLEAUX -------- */
-        table {
+        table.custom-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+            font-size: 11px;            /* Réduit pour plus de lignes */
+        }
+
+        table.custom-table th {
+            background: #2a3b90;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 6px 8px;
+            text-align: left;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        table.custom-table td {
+            padding: 5px 8px;           /* Padding réduit */
+            border-top: 1px solid #e2e8f0;
+            color: #334155;
+        }
+
+        /* CATEGORIES EXCES */
+        .exces-mineur { background-color: #f0fdf4; }
+        .exces-moyen  { background-color: #fefce8; }
+        .exces-grave  { background-color: #fff7ed; }
+        .exces-majeur { background-color: #fef2f2; }
+
+        /* TABLEAU RECAP EXCES */
+        .recap-exces-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+
+        .recap-exces-table th {
+            background: #0284c7;
+            color: #ffffff;
+            padding: 5px 8px;
+            font-size: 10px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .recap-exces-table td {
+            padding: 6px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .recap-exces-table td:last-child {
+            border-right: none;
+        }
+
+        /* -------- SIGNATURE TABLE -------- */
+        .signature-section {
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 8px;
             margin-bottom: 8px;
         }
 
-        th, td {
-            border: 1px solid #999;
-            padding: 5px 6px;
+        .signature-header {
+            background: #2a3b90;
+            color: #ffffff;
+            font-weight: 600;
             font-size: 11px;
+            padding: 5px 12px;
+            display: flex;
+            justify-content: space-between;
         }
 
-        th {
-            background: #1fb2ac;
-            color: #fff;
-            text-align: center;
-            font-weight: bold;
+        .signature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-top: 1px solid #cbd5e1;
         }
 
-        #nbexces th {
-            background: #004081;
+        .signature-box {
+            padding: 6px 12px;
+            height: 70px;
+            border-right: 1px solid #e2e8f0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        /* -------- EXCES -------- */
-        .exces-mineur { background: #f1f8e9; }
-        .exces-moyen  { background: #fff8e1; }
-        .exces-grave  { background: #fff3e0; }
-        .exces-majeur { background: #ffebee; }
-
-        /* -------- CANVAS -------- */
-        .canvas-container {
-            border: 1px solid #ccc;
-            background: #fafafa;
-            padding: 8px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            text-align: center;
+        .signature-box:last-child {
+            border-right: none;
         }
 
-        /* -------- SIGNATURE -------- */
-        .signature-table td {
-            height: 55px;
-            vertical-align: top;
+        .signature-role {
+            font-size: 10px;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .signature-date {
+            font-size: 9px;
+            color: #64748b;
+        }
+
+        .signature-img {
+            max-height: 45px;
+            object-fit: contain;
+            align-self: flex-end;
         }
 
         /* -------- FOOTER -------- */
         .pied-print {
             margin-top: 12px;
-            font-size: 10px;
+            padding-top: 6px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 9px;
             text-align: center;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 5px;
+            color: #64748b;
+        }
+
+        /* Petits titres de section */
+        .section-titre-exces {
+            font-size: 13px;
+            margin: 8px 0 5px 0;
+            color: #2a3b90;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -158,162 +386,318 @@
 
 <div class="print-container">
 
-    <!-- ================= PAGE 1 ================= -->
+    <!-- ============================================================ -->
+    <!-- ===================== PAGE 1 ================================ -->
+    <!-- ============================================================ -->
     <div class="page-section">
 
         <div class="header-section">
-            <img src="{{ asset('logosetram.png') }}" style="float:left">
-            <img src="{{ asset('cerclesetram.png') }}" style="float:right">
+            <a href="#"><img src="{{ asset('images/logosetram.png') }}" alt="SETRAM Logo"></a>
+            <!-- <img src="{{ asset('cerclesetram.png') }}" alt="SETRAM Emblem"> -->
         </div>
 
         <div class="main-title-container">
-            <div class="section-title">Rapport de contrôle des paramètres d'exploitation</div>
-            <div class="doc-code">Code : DG-PEX-FOR-0034-1</div>
+            <div class="section-title">Rapport de contrôle des paramètres d’exploitation</div>
+            <div class="doc-code">Code : DG-DEX-FOR-0034-B</div>
         </div>
 
-        @php
-            $ville = session('site', 'ALG');
-            $referenceCode = $ville . '-DE-CPE-' . sprintf('%04d', $course->code) . '-' . $lannee;
-        @endphp
-
-        <div class="reference-container">
-            <strong>Référence :</strong>
-            <span style="color:#1fb2ac;font-weight:bold">{{ $referenceCode }}</span>
+        <div class="reference-bar">
+            <div>
+                <span class="reference-title">Référence du rapport : </span>
+                <span class="reference-code">{{ $ville }}-DEX-RA-{{ sprintf('%04d', $course->code ?? 0) }}-{{ $lannee ?? date('Y') }}</span>
+            </div>
+            <div style="font-size: 10px; color: #64748b;">
+                <i class="fa-regular fa-calendar-check"></i> Document officiel SETRAM
+            </div>
         </div>
 
-        <div class="radio-container">
-            <table style="border:none">
-                <tr>
-                    @foreach(['ALG'=>'Alger','ORN'=>'Oran','CST'=>'Constantine','SBA'=>'Sidi Bel Abbès','ORG'=>'Ouargla','STF'=>'Sétif'] as $c=>$n)
-                        <td style="border:none">
-                            <input type="radio" {{ $ville==$c?'checked':'disabled' }}> {{ $n }}
-                        </td>
-                    @endforeach
-                </tr>
-            </table>
+        <div class="villes-grid">
+            @php
+                $villesList = [
+                    'ALG' => 'Alger',
+                    'ORN' => 'Oran',
+                    'CST' => 'Constantine',
+                    'SBA' => 'Sidi Bel Abbès',
+                    'ORG' => 'Ouargla',
+                    'STF' => 'Sétif',
+                    'MST' => 'Mostaganem'
+                ];
+            @endphp
+            @foreach($villesList as $c => $n)
+                <div class="ville-badge {{ $ville == $c ? 'active' : '' }}">
+                    @if($ville == $c) <i class="fa-solid fa-circle-check"></i> @endif {{ $n }}
+                </div>
+            @endforeach
         </div>
 
-        <div class="info-container">
-            <table style="border:none">
-                <tr>
-                    <td style="border:none"><strong>Date :</strong> {{ $course->ladate }}</td>
-                    <td style="border:none"><strong>Heure :</strong> {{ $course->heure }}</td>
-                    <td style="border:none"><strong>Début :</strong> {{ $course->lieudebut }}</td>
-                    <td style="border:none"><strong>Fin :</strong> {{ $course->lieufin }}</td>
-                    <td style="border:none"><strong>Voie :</strong> {{ $course->voie }}</td>
-                </tr>
-            </table>
+        <div class="info-card">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Date</span>
+                    <span class="info-value">{{ $course->ladate ?? '--' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Heure Début</span>
+                    <span class="info-value">{{ $course->heure ?? '--' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Lieu Début</span>
+                    <span class="info-value">{{ $course->lieudebut ?? '--' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Lieu Fin</span>
+                    <span class="info-value">{{ $course->lieufin ?? '--' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Voie</span>
+                    <span class="info-value">{{ $course->voie ?? '--' }}</span>
+                </div>
+            </div>
         </div>
 
-        <div class="info-container">
-            <table style="border:none">
-                <tr>
-                    <td style="border:none"><strong>Cond :</strong> {{ $course->conducteur->nom ?? '' }} {{ $course->conducteur->prenom ?? '' }}</td>
-                    <td style="border:none"><strong>Mat :</strong> {{ $course->conducteur->matricule ?? '' }}</td>
-                    <td style="border:none"><strong>SA :</strong> {{ $course->conducteur->SA ?? '' }}</td>
-                    <td style="border:none"><strong>Rame :</strong> {{ $course->conducteur->RAME ?? '' }}</td>
-                    <td style="border:none"><strong>SV :</strong> {{ $course->conducteur->SV ?? '' }}</td>
-                </tr>
-            </table>
+        <div class="info-card">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Conducteur</span>
+                    <span class="info-value">{{ $course->conducteur->nom ?? '' }} {{ $course->conducteur->prenom ?? '' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Matricule</span>
+                    <span class="info-value">{{ $course->conducteur->matricule ?? '--' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Service Agent (SA)</span>
+                    <span class="info-value">{{ $course->conducteur->SA ?? '--' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Tramway N°</span>
+                    <span class="info-value">{{ $course->conducteur->RAME ?? '--' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Service Véhicule (SV)</span>
+                    <span class="info-value">{{ $course->conducteur->SV ?? '--' }}</span>
+                </div>
+            </div>
         </div>
 
-        <div class="canvas-container no-break-inside">
-            <canvas id="minigraphe" width="1198" height="350" style="max-width:100%"></canvas>
+        <div class="canvas-card no-break">
+            <canvas id="minigraphe" width="1120" height="260"></canvas>
         </div>
 
-        <div class="stats-container no-break-inside">
-            <strong>Gong :</strong> {{ $nbGong }} |
-            <strong>Klaxon :</strong> {{ $nbKlaxon }} |
-            <strong>F.U. :</strong> {{ $nbFU }}
+        <div class="stats-grid no-break">
+            <div class="stat-card">
+                <span class="stat-title">Utilisation Gong</span>
+                <span class="stat-number">{{ $nbGong ?? 0 }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title">Utilisation Klaxon</span>
+                <span class="stat-number">{{ $nbKlaxon ?? 0 }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title">F.U. Manipulateur</span>
+                <span class="stat-number">{{ $nbFU ?? 0 }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-title">Patins Magnétiques</span>
+                <span class="stat-number">{{ $nbPatins ?? 0 }}</span>
+            </div>
         </div>
 
-    </div>
+    </div> <!-- fin page 1 -->
 
+    <!-- ============================================================ -->
+    <!-- ===================== PAGE 2 ================================ -->
+    <!-- ============================================================ -->
     <div class="saut-page"></div>
-
-    <!-- ================= PAGE 2 ================= -->
     <div class="page-section">
 
         <div class="header-section">
-            <img src="{{ asset('logosetram.png') }}" style="float:left">
-            <img src="{{ asset('cerclesetram.png') }}" style="float:right">
+            <a href="#"><img src="{{ asset('images/logosetram.png') }}" alt="SETRAM Logo"></a>
+            <!-- <img src="{{ asset('cerclesetram.png') }}" alt="SETRAM Emblem"> -->
         </div>
 
         <div class="main-title-container">
-            <div class="section-title">Rapport de contrôle des paramètres d'exploitation</div>
-            <div class="doc-code">Code : DG-PEX-FOR-0034-1</div>
+            <div class="section-title">Rapport de contrôle des paramètres d’exploitation</div>
+            <div class="doc-code">Code : DG-DEX-FOR-0034-B</div>
         </div>
 
-        <h3 style="text-align:center;color:#004081;margin:10px 0">
-            Excès de vitesse constatés
+        <h3 class="section-titre-exces">
+            <i class="fa-solid fa-triangle-exclamation"></i> Excès de vitesse constatés
         </h3>
 
-        <table id="exces">
+        <!-- TABLEAU DES EXCES (page 2) -->
+        <table class="custom-table" id="exces">
             <thead>
                 <tr>
-                    <th>Vitesse auto.</th>
-                    <th>Vitesse att.</th>
-                    <th>Dist.</th>
-                    <th>Interstation</th>
-                    <th>Détails</th>
-                    <th>Catégorie</th>
+                    <th style="width: 15%;">Vitesse aut. (km/h)</th>
+                    <th style="width: 15%;">Vitesse att. (km/h)</th>
+                    <th style="width: 12%;">Distance (m)</th>
+                    <th style="width: 23%;">Interstation</th>
+                    <th style="width: 20%;">Détails</th>
+                    <th style="width: 15%;">Catégorie</th>
                 </tr>
             </thead>
             <tbody>
-                @php $jk=0; $max=25; @endphp
+                @php $jk = 0; @endphp
                 @foreach($exait as $item)
-                    @if(($item['aire']??0)>10)
-                        <tr class="exces-{{ $item['categorie']??'mineur' }}">
-                            <td>{{ intval($item['limite']??0) }}</td>
-                            <td>{{ intval($item['max']??0) }}</td>
-                            <td>{{ ($item['fin']??0)-($item['debut']??0) }}</td>
-                            <td>{{ $item['interstation']??'--' }}</td>
-                            <td>{{ $item['detail']??'' }}</td>
-                            <td>{{ ucfirst($item['categorie']??'mineur') }}</td>
+                    @if(($item['aire'] ?? 0) > 10)
+                        <tr class="exces-{{ $item['categorie'] ?? 'mineur' }}">
+                            <td style="font-weight: 700;">{{ intval($item['limite'] ?? 0) }}</td>
+                            <td style="font-weight: 700; color: #dc2626;">{{ intval($item['max'] ?? 0) }}</td>
+                            <td>{{ ($item['fin'] ?? 0) - ($item['debut'] ?? 0) }}</td>
+                            <td>{{ $item['interstation'] ?? '--' }}</td>
+                            <td>{{ $item['detail'] ?? '' }}</td>
+                            <td>
+                                <span style="font-weight: 700; font-size: 10px; text-transform: uppercase;">
+                                    {{ ucfirst($item['categorie'] ?? 'mineur') }}
+                                </span>
+                            </td>
                         </tr>
                         @php $jk++; @endphp
                     @endif
                 @endforeach
-                @if($jk==0)
-                    <tr><td colspan="6" style="text-align:center">Aucun excès observé</td></tr>
+
+                @if($jk == 0)
+                    <tr>
+                        <td colspan="6" style="text-align:center; padding: 15px; color: #16a34a; font-weight: 600;">
+                            <i class="fa-solid fa-circle-check"></i> Aucun excès de vitesse observé durant ce parcours
+                        </td>
+                    </tr>
                 @endif
             </tbody>
         </table>
 
-        <table id="nbexces" class="no-break-inside">
-            <tr>
-                <th>Mineurs</th><th>Moyens</th><th>Graves</th><th>Majeurs</th>
-            </tr>
-            <tr>
-                <td style="text-align:center;font-weight:bold">{{ $nbmineur }}</td>
-                <td style="text-align:center;font-weight:bold">{{ $nbmoyen }}</td>
-                <td style="text-align:center;font-weight:bold">{{ $nbgrave }}</td>
-                <td style="text-align:center;font-weight:bold">{{ $nbmajeur }}</td>
-            </tr>
-        </table>
+        <!-- ========================================================== -->
+        <!-- SI PEU D'EXCES (≤ 10) : récap + signatures sur la PAGE 2 -->
+        <!-- ========================================================== -->
+        @if($jk <= 10)
+            <table class="recap-exces-table no-break" id="nbexces">
+                <thead>
+                    <tr>
+                        <th>Excès mineurs</th>
+                        <th>Excès moyens</th>
+                        <th>Excès graves</th>
+                        <th>Excès majeurs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="background: #f0fdf4; color: #166534;">{{ $nbmineur ?? 0 }}</td>
+                        <td style="background: #fefce8; color: #854d0e;">{{ $nbmoyen ?? 0 }}</td>
+                        <td style="background: #fff7ed; color: #9a3412;">{{ $nbgrave ?? 0 }}</td>
+                        <td style="background: #fef2f2; color: #991b1b;">{{ $nbmajeur ?? 0 }}</td>
+                    </tr>
+                </tbody>
+            </table>
 
-        <table class="signature-table no-break-inside">
-            <tr>
-                <th>Commentaires</th><th>Signature</th>
-            </tr>
-            <tr><td>Agent de maitrise</td><td></td></tr>
-            <tr><td>Conducteur</td><td></td></tr>
-            <tr><td>Référent</td><td></td></tr>
-        </table>
+            <div class="signature-section no-break">
+                <div class="signature-header">
+                    <span>Validation et Signatures</span>
+                    <span>Date d'évaluation : {{ date('d/m/Y') }}</span>
+                </div>
+                <div class="signature-grid">
+                    <div class="signature-box">
+                        <span class="signature-role">Agent de maîtrise (Contrôleur)</span>
+                        @if(isset($signatureImage))
+                            <img src="{{ asset($signatureImage) }}" class="signature-img" alt="Signature Agent">
+                        @endif
+                    </div>
+                    <div class="signature-box">
+                        <span class="signature-role">Conducteur :</span>
+                        <span style="font-size: 11px; font-weight: 600; color: #1e293b;">
+                            {{ $course->conducteur->nom ?? '' }} {{ $course->conducteur->prenom ?? '' }}
+                        </span>
+                    </div>
+                    <div class="signature-box">
+                        <span class="signature-role">Agent de maîtrise référent</span>
+                    </div>
+                </div>
+            </div>
 
-        <div class="pied-print">
-            Ce document est la propriété de SETRAM spa.
-        </div>
+            <div class="pied-print">
+                Ce document est la propriété exclusive de SETRAM spa. Il ne peut être utilisé, reproduit ou communiqué sans autorisation préalable.
+            </div>
+        @endif
 
-    </div>
-</div>
+    </div> <!-- fin page 2 -->
 
+    <!-- ============================================================ -->
+    <!-- ===================== PAGE 3 (conditionnelle) ============== -->
+    <!-- ============================================================ -->
+    @if($jk > 10)
+        <div class="saut-page"></div>
+        <div class="page-section">
+
+            <div class="header-section">
+                <a href="#"><img src="{{ asset('images/logosetram.png') }}" alt="SETRAM Logo"></a>
+                <!-- <img src="{{ asset('cerclesetram.png') }}" alt="SETRAM Emblem"> -->
+            </div>
+
+            <div class="main-title-container">
+                <div class="section-title">Rapport de contrôle – Suite et validation</div>
+                <div class="doc-code">Code : DG-DEX-FOR-0034-B</div>
+            </div>
+
+            <!-- RÉCAPITULATIF DES EXCES -->
+            <table class="recap-exces-table no-break" id="nbexces">
+                <thead>
+                    <tr>
+                        <th>Excès mineurs</th>
+                        <th>Excès moyens</th>
+                        <th>Excès graves</th>
+                        <th>Excès majeurs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="background: #f0fdf4; color: #166534;">{{ $nbmineur ?? 0 }}</td>
+                        <td style="background: #fefce8; color: #854d0e;">{{ $nbmoyen ?? 0 }}</td>
+                        <td style="background: #fff7ed; color: #9a3412;">{{ $nbgrave ?? 0 }}</td>
+                        <td style="background: #fef2f2; color: #991b1b;">{{ $nbmajeur ?? 0 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- SIGNATURES -->
+            <div class="signature-section no-break">
+                <div class="signature-header">
+                    <span>Validation et Signatures</span>
+                    <span>Date d'évaluation : {{ date('d/m/Y') }}</span>
+                </div>
+                <div class="signature-grid">
+                    <div class="signature-box">
+                        <span class="signature-role">Agent de maîtrise (Contrôleur)</span>
+                        @if(isset($signatureImage))
+                            <img src="{{ asset($signatureImage) }}" class="signature-img" alt="Signature Agent">
+                        @endif
+                    </div>
+                    <div class="signature-box">
+                        <span class="signature-role">Conducteur :</span>
+                        <span style="font-size: 11px; font-weight: 600; color: #1e293b;">
+                            {{ $course->conducteur->nom ?? '' }} {{ $course->conducteur->prenom ?? '' }}
+                        </span>
+                    </div>
+                    <div class="signature-box">
+                        <span class="signature-role">Agent de maîtrise référent</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pied-print">
+                Ce document est la propriété exclusive de SETRAM spa. Il ne peut être utilisé, reproduit ou communiqué sans autorisation préalable.
+            </div>
+
+        </div> <!-- fin page 3 -->
+    @endif
+
+</div> <!-- fin print-container -->
+
+<!-- ============ SCRIPTS ============ -->
 <script src="{{ asset('js/jquery.min.js') }}"></script>
 <script src="{{ asset('js/jquery-ui.js') }}"></script>
 <script src="{{ asset('js/mongraph3.js') }}"></script>
 <script>
     $(function() {
-        // Préparation des données pour leminigraphe (utilise la fonction définie dans mongraph3.js)
         var data = { values: [
             @foreach($pointcourses as $i => $point)
                 {
@@ -344,11 +728,9 @@
 
         var canvas = document.getElementById('minigraphe');
         if (canvas) {
-            // Appel de la fonction fournie par mongraph3.js
             if (typeof leminigraphe === 'function') {
                 leminigraphe(data, env, 0, data.values.length);
             } else {
-                // Au cas où le script n'est pas encore chargé, tenter après un court délai
                 setTimeout(function() {
                     if (typeof leminigraphe === 'function') {
                         leminigraphe(data, env, 0, data.values.length);
@@ -358,5 +740,6 @@
         }
     });
 </script>
+
 </body>
 </html>

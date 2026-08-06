@@ -90,7 +90,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark navbar-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ route('dashboard') }}">
-                <i class="fas fa-tachometer-alt me-2"></i>Tachy App
+                <i class="fas fa-tachometer-alt me-2"></i>Dorcas
             </a>
             <div class="ms-auto d-flex align-items-center">
                 <div class="user-info">
