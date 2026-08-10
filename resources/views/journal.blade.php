@@ -212,10 +212,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     this.data.journalData = data.journal || [];
                     this.data.coursesData = data.courses || [];
-                    
+
                     this.data.users.clear();
                     this.data.actions.clear();
-                    
+
                     this.data.journalData.forEach(item => {
                         this.data.users.add(`${item.iduser} ${item.nom}`);
                         this.data.actions.add(item.action);
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderActionFilters() {
             const container = document.getElementById('actionCheckboxes');
             container.innerHTML = '';
-            
+
             Array.from(this.data.actions).sort().forEach(action => {
                 const div = document.createElement('div');
                 div.className = 'form-check';
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderUserFilters() {
             const container = document.getElementById('userCheckboxes');
             container.innerHTML = '';
-            
+
             Array.from(this.data.users).sort().forEach(user => {
                 const div = document.createElement('div');
                 div.className = 'form-check';
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 Array.from(document.querySelectorAll('.action-checkbox:checked')).map(el => el.value)
             );
 
-            this.data.filteredJournal = this.data.journalData.filter(item => 
+            this.data.filteredJournal = this.data.journalData.filter(item =>
                 this.data.selectedUsers.has(`${item.iduser} ${item.nom}`) &&
                 this.data.selectedActions.has(item.action)
             );
