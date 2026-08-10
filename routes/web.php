@@ -80,6 +80,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('export-csv', [StatistiqueController::class, 'exportCSV'])->name('export-csv');
     });
 
+    // Journal (en dehors du groupe statistiques)
+    Route::get('journal', [StatistiqueController::class, 'journal'])->name('journal');
+    Route::get('api/journal', [StatistiqueController::class, 'apiJournal'])->name('api.journal');
+
     // Statistiques Freinage
     Route::prefix('stat-freinages')->name('stat-freinages.')->group(function () {
         Route::get('categories', [StatFreinageController::class, 'categories'])->name('categories');

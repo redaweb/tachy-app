@@ -62,12 +62,12 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>Statut</th>
+                        <th>Accès à l'enveloppe</th>
                         <td>
                             @if($user->envBloque)
                                 <span class="badge bg-danger">Bloqué</span>
                             @else
-                                <span class="badge bg-success">Actif</span>
+                                <span class="badge bg-success">Autorisé</span>
                             @endif
                         </td>
                     </tr>

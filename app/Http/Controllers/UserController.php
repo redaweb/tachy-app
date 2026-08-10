@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -27,6 +28,9 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = User::query();
+//dd(request()->all());
+        // DEBUG: Log les paramètres reçus
+        \Log::info('Filter params:', $request->all());
 
         // Recherche par nom
         if ($request->has('search') && !empty($request->search)) {
@@ -38,15 +42,23 @@ class UserController extends Controller
             $query->where('profil', $request->profil);
         }
 
-        // Filtre par statut
-        if ($request->has('statut') && $request->statut !== '') {
-            $query->where('envBloque', $request->statut);
+        // Filtre par accès à l'enveloppe
+        // Filtre par accès à l'enveloppe
+        if ($request->has('statut') && $request->statut !== null && $request->statut !== '') {
+            $query->where('envBloque', (int) $request->statut);
         }
 
         // Filtre par site
         if ($request->has('site') && !empty($request->site)) {
             $query->where('site', $request->site);
         }
+//dd( $query->toSql(), $query->getBindings());
+        // DEBUG: Log la requête SQL
+        \Log::info('User query:', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+            'count' => $query->count()
+        ]);
 
         // Pagination de 10 éléments par page
         $users = $query->orderBy('iduser', 'desc')->paginate(10);
@@ -165,12 +177,16 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-
+        //dd($request->all() + ['id' => $user->iduser]);
         $validated = $request->validate([
-            'nom' => 'required|string|max:255|unique:users,nom,' . $id . ',iduser',
-            'profil' => 'required|string|in:admin,user,supervisor',
+            'nom' => [
+                'required',
+                'string',
+                'max:255'
+            ],
+            'profil' => 'required|string|in:admin,user,supervisor,DG,managerR',
             'site' => 'nullable|string|max:255',
-            'motpass' => 'nullable|string|min:6',
+            'motpass' => 'nullable|string|min:4',
             'envBloque' => 'sometimes|boolean'
         ]);
 

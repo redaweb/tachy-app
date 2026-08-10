@@ -190,17 +190,6 @@
                                 <li><a class="dropdown-item" href="{{ route('statistiques.conducteurs') }}">Répartition par conducteur</a></li>
                                 <li><a class="dropdown-item" href="{{ route('statistiques.interstations') }}">Répartition par inter-station</a></li>
                                 <li><a class="dropdown-item" href="{{ route('statistiques.mensuelle') }}">Synthèse par mois</a></li>
-
-                                @if(in_array(auth()->user()->matricule, ['310040', '310020']) ||
-                                    auth()->user()->profil === 'DG' ||
-                                    auth()->user()->profil === 'managerR')
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ route('statistiques.tous-exces') }}">Tous les excès</a></li>
-                                @endif
-
-                                @if(in_array(auth()->user()->matricule, ['310040', '310020']))
-                                <li><a class="dropdown-item" href="{{ route('statistiques.journal') }}">Journal</a></li>
-                                @endif
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
@@ -213,20 +202,14 @@
                                 <li><a class="dropdown-item" href="{{ route('stat-freinages.evolution') }}">Évolution par excès</a></li>
                                 <li><a class="dropdown-item" href="{{ route('stat-freinages.conducteurs') }}">Répartition par conducteur</a></li>
                                 <li><a class="dropdown-item" href="{{ route('stat-freinages.interstations') }}">Répartition par inter-station</a></li>
-
-                                @if(in_array(auth()->user()->matricule, ['310040', '310020']) ||
-                                    auth()->user()->profil === 'DG' ||
-                                    auth()->user()->profil === 'managerR')
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ route('statistiques.tous-exces') }}">Tous les excès</a></li>
-                                @endif
-
-                                @if(in_array(auth()->user()->matricule, ['310040', '310020']))
-                                <li><a class="dropdown-item" href="{{ route('statistiques.journal') }}">Journal</a></li>
-                                @endif
                             </ul>
                         </li>
                         @endif
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('journal') }}">
+                                <i class="fas fa-book me-2"></i>Journal
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>

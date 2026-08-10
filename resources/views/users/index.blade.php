@@ -41,10 +41,10 @@
                 </div>
 
                 <div class="col-md-2">
-                    <label for="statut" class="form-label">Filtrer par statut</label>
+                    <label for="statut" class="form-label">Filtrer par accès à l'enveloppe</label>
                     <select class="form-select" id="statut" name="statut" onchange="this.form.submit()">
                         <option value="">Tous</option>
-                        <option value="0" {{ request('statut') === '0' ? 'selected' : '' }}>Actif</option>
+                        <option value="0" {{ request('statut') === '0' ? 'selected' : '' }}>Autorisé</option>
                         <option value="1" {{ request('statut') === '1' ? 'selected' : '' }}>Bloqué</option>
                     </select>
                 </div>
@@ -84,7 +84,7 @@
                         <th>Nom</th>
                         <th>Profil</th>
                         <th>Site</th>
-                        <th>Statut</th>
+                        <th>Accès à l'enveloppe</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -123,13 +123,13 @@
                                     <label class="form-check-label" for="status_{{ $user->iduser }}">
                                         <span class="badge {{ $user->envBloque ? 'bg-danger' : 'bg-success' }}"
                                               id="status_label_{{ $user->iduser }}">
-                                            {{ $user->envBloque ? 'Bloqué' : 'Actif' }}
+                                            {{ $user->envBloque ? 'Bloqué' : 'Autorisé' }}
                                         </span>
                                     </label>
                                 </div>
                             @else
                                 <span class="badge {{ $user->envBloque ? 'bg-danger' : 'bg-success' }}">
-                                    {{ $user->envBloque ? 'Bloqué' : 'Actif' }}
+                                    {{ $user->envBloque ? 'Bloqué' : 'Autorisé' }}
                                 </span>
                                 <small class="text-muted d-block">(votre compte)</small>
                             @endif

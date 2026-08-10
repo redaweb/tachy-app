@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Exces;
 use App\Models\Course;
 use App\Models\Conducteur;
+use App\Models\Journal;
 use App\Models\LogActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,7 @@ class StatistiqueController extends Controller
         // Vérifier les autorisations pour les onglets supplémentaires
         $user = auth()->user();
         $showTabs = $user->profil == 'DG' ||
-                    in_array($user->matricule, ['310040', '310020']) ||
+                    in_array($user->matricule, [310040, 310020]) ||
                     $user->profil == 'managerR';
 
         return view('statistiques.evolution', compact('showTabs'));
@@ -47,6 +48,93 @@ class StatistiqueController extends Controller
     public function mensuelle()
     {
         return view('statistiques.mensuelle');
+    }
+
+    // Page journal
+    public function journal()
+    {
+        return view('journal');
+    }
+
+    // API pour les données du journal
+    public function apiJournal(Request $request)
+    {
+        $site = session('site', 'ALG');
+
+        try {
+            // Récupérer les données du journal
+            $query = Journal::where('site', $site);
+
+            if ($request->has('debut') && $request->has('fin')) {
+                $debut = $request->debut;
+                $fin = $request->fin;
+                $query->whereBetween('ladate', [$debut, $fin]);
+            }
+
+            $journal = $query->orderBy('ladate', 'desc')
+                ->orderBy('heure', 'desc')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'iduser' => $item->matricule,
+                        'nom' => $item->nom,
+                        'ladate' => $item->ladate,
+                        'heure' => $item->heure,
+                        'action' => $item->action,
+                        'detail' => $item->detail
+                    ];
+                })
+                ->toArray();
+
+            // Récupérer les courses ouvertes non enregistrées
+            $coursesQuery = Course::select(
+                    'courses.*',
+                    \DB::raw("(SELECT nom FROM journal WHERE action='consulter la course' AND detail=courses.idcourse ORDER BY ladate DESC LIMIT 1) as ouvertPar"),
+                    'enveloppe.nom as nomenveloppe'
+                )
+                ->leftJoin('enveloppe', 'courses.idenveloppe', '=', 'enveloppe.idenveloppe')
+                ->where('courses.site', $site)
+                ->where(function ($q) {
+                    $q->whereNull('courses.valide')->orWhere('courses.valide', false);
+                });
+
+            if ($request->has('debut') && $request->has('fin')) {
+                $debut = $request->debut;
+                $fin = $request->fin;
+                $coursesQuery->whereBetween('courses.ladate', [$debut, $fin]);
+            }
+
+            $courses = $coursesQuery->get()
+                ->map(function ($item) {
+                    return [
+                        'idcourse' => $item->idcourse,
+                        'ladate' => $item->ladate,
+                        'heure' => $item->heure,
+                        'distance' => $item->distance,
+                        'nomenveloppe' => $item->nomenveloppe ?? 'N/A',
+                        'commentaire' => $item->commentaire,
+                        'ouvertPar' => $item->ouvertPar
+                    ];
+                })
+                ->toArray();
+
+            return response()->json([
+                'journal' => $journal,
+                'courses' => $courses
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Erreur lors du chargement du journal',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    // Page tous les excès
+    public function tousExces()
+    {
+        return view('statistiques.tous-exces');
     }
 
 

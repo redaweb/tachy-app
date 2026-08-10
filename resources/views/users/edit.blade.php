@@ -42,11 +42,11 @@
                             <option value="admin" {{ old('profil', $user->profil) == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="supervisor" {{ old('profil', $user->profil) == 'supervisor' ? 'selected' : '' }}>Superviseur</option>
                             <option value="user" {{ old('profil', $user->profil) == 'user' ? 'selected' : '' }}>Utilisateur</option>
-                            @if(in_array(auth()->user()->profil, ['superadmin', 'DG']))
+
                             <option value="DG" {{ old('profil', $user->profil) == 'DG' ? 'selected' : '' }}>Directeur Général</option>
                             <option value="managerR" {{ old('profil', $user->profil) == 'managerR' ? 'selected' : '' }}>Manager Régional</option>
                             <option value="superadmin" {{ old('profil', $user->profil) == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
-                            @endif
+
                         </select>
                         @error('profil')
                             <div class="invalid-feedback">{{ $message }}</div>
