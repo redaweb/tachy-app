@@ -542,8 +542,8 @@ class CourseController extends Controller
 
             // Journalisation
             Journal::create([
-            'matricule' => Auth::user()->matricule,
-            'nom' => Auth::user()->name,
+            'matricule' => Auth::user()->iduser,
+            'nom' => Auth::user()->nom,
             'ladate' => now()->toDateString(), // Format date seulement
             'heure' => now()->format('H:i:s'), // Format heure seulement
             'action' => 'enregistrer la course',
@@ -618,8 +618,8 @@ class CourseController extends Controller
 
         // Journalisation
         Journal::create([
-            'matricule' => Auth::user()->matricule,
-            'nom' => Auth::user()->name,
+            'matricule' => Auth::user()->iduser,
+            'nom' => Auth::user()->nom,
             'ladate' => now()->toDateString(), // Format date seulement
             'heure' => now()->format('H:i:s'), // Format heure seulement
             'action' => 'annuler la course',
@@ -1149,6 +1149,18 @@ class CourseController extends Controller
         if ($data instanceof \Illuminate\Http\RedirectResponse) {
             return $data;
         }
+
+        $user = Auth::user();
+        Journal::create([
+            'matricule' => $user?->iduser ? (string) $user->iduser : null,
+            'nom' => $user?->nom,
+            'ladate' => now()->toDateString(),
+            'heure' => now()->format('H:i:s'),
+            'action' => 'consulter la course',
+            'detail' => (string) $course->idcourse,
+            'site' => session('site', 'ALG'),
+        ]);
+
         $course->idenveloppe = $data['quelenv'] ?? null;
         $course->gong=$data['nbGong'] ?? 0;
         $course->klaxon=$data['nbKlaxon'] ?? 0;

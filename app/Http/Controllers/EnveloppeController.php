@@ -259,6 +259,15 @@ class EnveloppeController extends Controller
             // Journalisation
             $action = $freeze ? 'figer enveloppe' : 'liberer enveloppe';
             $this->logAction($action, $enveloppe->idenveloppe);
+            Journal::create([
+                'matricule' => Auth::user()->iduser ? (string) Auth::user()->iduser : null,
+                'nom' => Auth::user()->nom ?? 'Inconnu',
+                'ladate' => now()->toDateString(),
+                'heure' => now()->format('H:i:s'),
+                'action' => $action,
+                'detail' => "Enveloppe ID: {$enveloppe->idenveloppe}",
+                'site' => Session::get('site'),
+            ]);
 
             $message = $freeze ? 'L\'enveloppe a été archivée.' : 'L\'enveloppe a été libérée.';
 
@@ -447,6 +456,15 @@ class EnveloppeController extends Controller
 
         // Journalisation
         $this->logAction('exporter enveloppes', 0);
+        Journal::create([
+            'matricule' => Auth::user()->iduser ? (string) Auth::user()->iduser : null,
+            'nom' => Auth::user()->nom ?? 'Inconnu',
+            'ladate' => now()->toDateString(),
+            'heure' => now()->format('H:i:s'),
+            'action' => 'exporter enveloppes',
+            'detail' => "Export CSV des enveloppes",
+            'site' => Session::get('site'),
+        ]);
 
         return response($content)
             ->header('Content-Type', 'text/csv; charset=utf-8')

@@ -324,7 +324,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${item.iduser}</td>
                         <td>${item.nom}</td>
                         <td><span class="badge bg-info">${item.action}</span></td>
-                        <td>${item.detail || '-'}</td>
+                        <td>${item.detail || '-'}
+                            ${ (item.action && item.action.includes('course')) ? `<a href="/courses/${item.detail}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-info ms-2"><i class="fas fa-external-link-alt"></i></a>` : '' }
+                        </td>
                     </tr>
                 `).join('');
             }
@@ -333,6 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
 
         renderCoursesTable() {
+            console.log('Rendering courses table with filtered data:', this.data.filteredCourses);
             const tbody = document.getElementById('coursesTableBody');
             const start = (this.data.currentPageCourses - 1) * this.data.perPage;
             const end = start + this.data.perPage;
@@ -350,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td>${item.commentaire || '-'}</td>
                         <td>${item.ouvertPar || '-'}</td>
                         <td>
-                            <a href="{{ route('courses.show', '') }}/${item.idcourse}" class="btn btn-sm btn-info">
+                            <a href="/courses/${item.idcourse}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-info">
                                 Ouvrir
                             </a>
                         </td>
