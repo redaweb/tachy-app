@@ -39,9 +39,9 @@
                                 id="profil" name="profil" required>
                             <option value="">Sélectionnez un profil</option>
                             <option value="admin" {{ old('profil') == 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="supervisor" {{ old('profil') == 'supervisor' ? 'selected' : '' }}>Superviseur</option>
                             <option value="user" {{ old('profil') == 'user' ? 'selected' : '' }}>Utilisateur</option>
                             <option value="DG" {{ old('profil') == 'DG' ? 'selected' : '' }}>Directeur Général</option>
+                            <option value="manager" {{ old('profil') == 'manager' ? 'selected' : '' }}>Manager</option>
                             <option value="managerR" {{ old('profil') == 'managerR' ? 'selected' : '' }}>Manager Régional</option>
                             <option value="superadmin" {{ old('profil') == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
 

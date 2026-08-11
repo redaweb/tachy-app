@@ -136,7 +136,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'nom' => 'required|string|max:255|unique:users',
             'motpass' => 'required|string|min:6',
-            'profil' => 'required|string|in:admin,user,supervisor',
+            'profil' => 'required|string',
             'site' => 'nullable|string|max:255',
             'envBloque' => 'sometimes|boolean'
         ]);
@@ -182,9 +182,10 @@ class UserController extends Controller
             'nom' => [
                 'required',
                 'string',
-                'max:255'
+                'max:255',
+                Rule::unique('users', 'nom')->ignore($user->nom, 'nom')
             ],
-            'profil' => 'required|string|in:admin,user,supervisor,DG,managerR',
+            'profil' => 'required|string',
             'site' => 'nullable|string|max:255',
             'motpass' => 'nullable|string|min:4',
             'envBloque' => 'sometimes|boolean'

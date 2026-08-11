@@ -40,8 +40,8 @@
                                 id="profil" name="profil" required>
                             <option value="">Sélectionnez un profil</option>
                             <option value="admin" {{ old('profil', $user->profil) == 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="supervisor" {{ old('profil', $user->profil) == 'supervisor' ? 'selected' : '' }}>Superviseur</option>
                             <option value="user" {{ old('profil', $user->profil) == 'user' ? 'selected' : '' }}>Utilisateur</option>
+                            <option value="manager" {{ old('profil', $user->profil) == 'manager' ? 'selected' : '' }}>Manager</option>
 
                             <option value="DG" {{ old('profil', $user->profil) == 'DG' ? 'selected' : '' }}>Directeur Général</option>
                             <option value="managerR" {{ old('profil', $user->profil) == 'managerR' ? 'selected' : '' }}>Manager Régional</option>
