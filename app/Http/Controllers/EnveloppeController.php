@@ -46,6 +46,9 @@ class EnveloppeController extends Controller
             $query->where('voie', $request->voie);
         }
 
+        if(auth()->user()->profil === 'DG' || auth()->user()->profil === 'managerR' ||  auth()->user()->profil === 'user') {
+            $query->where('figer',false);
+        }
         // Filtre par statut (archivée/non archivée)
         if ($request->has('statut') && $request->statut !== '') {
             if ($request->statut === 'archivee') {
