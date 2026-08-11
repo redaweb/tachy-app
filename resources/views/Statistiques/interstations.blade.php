@@ -388,22 +388,22 @@ function repartitionInterstations() {
                     {
                         label: 'Excès mineur',
                         data: interstations.map(i => i.mineur),
-                        backgroundColor: 'rgba(75,192,40,0.8)'
+                        backgroundColor: window.categoryColors?.mineur?.chartBg
                     },
                     {
                         label: 'Excès moyen',
                         data: interstations.map(i => i.moyen),
-                        backgroundColor: 'rgba(255,206,86,0.8)'
+                        backgroundColor: window.categoryColors?.moyen?.chartBg
                     },
                     {
                         label: 'Excès grave',
                         data: interstations.map(i => i.grave),
-                        backgroundColor: 'rgba(200,50,0,0.8)'
+                        backgroundColor: window.categoryColors?.grave?.chartBg
                     },
                     {
                         label: 'Excès majeur',
                         data: interstations.map(i => i.majeur),
-                        backgroundColor: 'rgba(255,50,50,0.8)'
+                        backgroundColor: window.categoryColors?.majeur?.chartBg
                     }
                 ]
             };

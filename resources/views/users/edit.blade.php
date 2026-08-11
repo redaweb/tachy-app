@@ -45,7 +45,6 @@
 
                             <option value="DG" {{ old('profil', $user->profil) == 'DG' ? 'selected' : '' }}>Directeur Général</option>
                             <option value="managerR" {{ old('profil', $user->profil) == 'managerR' ? 'selected' : '' }}>Manager Régional</option>
-                            <option value="superadmin" {{ old('profil', $user->profil) == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
 
                         </select>
                         @error('profil')
@@ -79,7 +78,7 @@
                             <input type="checkbox" class="form-check-input" id="envBloque" name="envBloque"
                                    value="1" {{ old('envBloque', $user->envBloque) ? 'checked' : '' }}>
                             <label class="form-check-label" for="envBloque">
-                                Bloquer l'utilisateur
+                                Bloquer l'accés de l'enveloppe
                             </label>
                         </div>
                     </div>

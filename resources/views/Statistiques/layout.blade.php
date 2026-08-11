@@ -55,22 +55,22 @@
     }
 
     .badge-mineur {
-        background-color: rgba(75, 192, 40, 0.9);
+        background-color: var(--category-mineur-bg);
         color: white;
     }
 
     .badge-moyen {
-        background-color: rgba(255, 206, 86, 0.9);
+        background-color: var(--category-moyen-bg);
         color: #212529;
     }
 
     .badge-grave {
-        background-color: rgba(200, 50, 0, 0.9);
+        background-color: var(--category-grave-bg);
         color: white;
     }
 
     .badge-majeur {
-        background-color: rgba(255, 50, 50, 0.9);
+        background-color: var(--category-majeur-bg);
         color: white;
     }
 
@@ -183,6 +183,31 @@
 <script src="/js/alpine.min.js" defer></script>
 <script src="/js/chart.js"></script>
 <script src="/js/axios.min.js"></script>
+
+<script>
+window.categoryColors = {
+    mineur: {
+        badge: getComputedStyle(document.documentElement).getPropertyValue('--category-mineur-bg').trim() || 'rgba(75, 192, 40, 0.9)',
+        chartBg: getComputedStyle(document.documentElement).getPropertyValue('--category-mineur-bg').trim() || 'rgba(75, 192, 40, 0.8)',
+        border: getComputedStyle(document.documentElement).getPropertyValue('--category-mineur-border').trim() || 'rgba(75, 192, 40, 1)'
+    },
+    moyen: {
+        badge: getComputedStyle(document.documentElement).getPropertyValue('--category-moyen-bg').trim() || 'rgba(255, 206, 86, 0.9)',
+        chartBg: getComputedStyle(document.documentElement).getPropertyValue('--category-moyen-bg').trim() || 'rgba(255, 206, 86, 0.8)',
+        border: getComputedStyle(document.documentElement).getPropertyValue('--category-moyen-border').trim() || 'rgba(255, 206, 86, 1)'
+    },
+    grave: {
+        badge: getComputedStyle(document.documentElement).getPropertyValue('--category-grave-bg').trim() || 'rgba(200, 50, 0, 0.9)',
+        chartBg: getComputedStyle(document.documentElement).getPropertyValue('--category-grave-bg').trim() || 'rgba(200, 50, 0, 0.8)',
+        border: getComputedStyle(document.documentElement).getPropertyValue('--category-grave-border').trim() || 'rgba(200, 50, 0, 1)'
+    },
+    majeur: {
+        badge: getComputedStyle(document.documentElement).getPropertyValue('--category-majeur-bg').trim() || 'rgba(255, 50, 50, 0.9)',
+        chartBg: getComputedStyle(document.documentElement).getPropertyValue('--category-majeur-bg').trim() || 'rgba(255, 50, 50, 0.8)',
+        border: getComputedStyle(document.documentElement).getPropertyValue('--category-majeur-border').trim() || 'rgba(255, 50, 50, 1)'
+    }
+};
+</script>
 
 <script>
 // Store Alpine.js global pour les statistiques

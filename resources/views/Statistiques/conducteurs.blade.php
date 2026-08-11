@@ -254,29 +254,29 @@ function repartitionConducteurs() {
                         {
                             label: 'Excès mineur',
                             data: [],
-                            backgroundColor: 'rgba(75, 192, 40, 0.8)',
-                            borderColor: 'rgba(75, 192, 40, 1)',
+                            backgroundColor: window.categoryColors?.mineur?.chartBg,
+                            borderColor: window.categoryColors?.mineur?.border,
                             borderWidth: 1
                         },
                         {
                             label: 'Excès moyen',
                             data: [],
-                            backgroundColor: 'rgba(255, 206, 86, 0.8)',
-                            borderColor: 'rgba(255, 206, 86, 1)',
+                            backgroundColor: window.categoryColors?.moyen?.chartBg,
+                            borderColor: window.categoryColors?.moyen?.border,
                             borderWidth: 1
                         },
                         {
                             label: 'Excès grave',
                             data: [],
-                            backgroundColor: 'rgba(200, 50, 0, 0.8)',
-                            borderColor: 'rgba(200, 50, 0, 1)',
+                            backgroundColor: window.categoryColors?.grave?.chartBg,
+                            borderColor: window.categoryColors?.grave?.border,
                             borderWidth: 1
                         },
                         {
                             label: 'Excès majeur',
                             data: [],
-                            backgroundColor: 'rgba(255, 50, 50, 0.8)',
-                            borderColor: 'rgba(255, 50, 50, 1)',
+                            backgroundColor: window.categoryColors?.majeur?.chartBg,
+                            borderColor: window.categoryColors?.majeur?.border,
                             borderWidth: 1
                         }
                     ]

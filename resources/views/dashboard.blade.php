@@ -168,6 +168,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    voir plus <a href="{{ route('courses.index') }}">ici</a>
                 </div>
             </div>
         </div>
@@ -196,7 +197,7 @@
                                 <td class="text-danger">{{ $exces->maxx ?? 0 }} km/h</td>
                                 <td>{{ $exces->autorise ?? 0 }} km/h</td>
                                 <td><span class="badge bg-primary">{{ $exces->categorie ?? 'N/A' }}</span></td>
-                                <td>{{ $course->conducteur->prenom ?? '' }} {{ $course->conducteur->nom ?? 'N/A' }}</td>
+                                <td>{{ $exces->course->conducteur->prenom ?? '' }} {{ $exces->course->conducteur->nom ?? 'N/A' }}</td>
                             </tr>
                             @empty
                             <tr>
@@ -205,6 +206,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    voir plus <a href="{{ route('statistiques.categories') }}">ici</a>
                 </div>
             </div>
         </div>
@@ -243,6 +245,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    voir plus <a href="{{ route('stat-freinages.categories') }}">ici</a>
                 </div>
             </div>
         </div>

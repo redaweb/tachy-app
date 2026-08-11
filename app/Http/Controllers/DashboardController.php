@@ -65,11 +65,18 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $recentJournal = Journal::orderBy('ladate', 'desc')
+        $recentJournalQuery = Journal::query()
             ->where('site', $site)
+            ->orderBy('ladate', 'desc')
             ->orderBy('heure', 'desc')
-            ->limit(5)
-            ->get();
+            ->limit(5);
+
+        if (auth()->user()->profil !== 'ADMIN' && auth()->user()->profil !== 'DG') {
+            $recentJournalQuery->where('matricule', auth()->user()->iduser);
+        }
+
+        $recentJournal = $recentJournalQuery->get();
+        //dd(auth()->user()->iduser, auth()->user()->profil, $recentJournal);
 
         return view('dashboard', compact('stats', 'recentCourses', 'recentExces', 'recentFreinages', 'recentJournal'));
     }

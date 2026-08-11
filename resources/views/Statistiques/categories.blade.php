@@ -279,16 +279,16 @@
                         datasets: [{
                             data: [this.nbmineur, this.nbmoyen, this.nbgrave, this.nbmajeur],
                             backgroundColor: [
-                                'rgba(75, 192, 40, 0.8)',
-                                'rgba(255, 206, 86, 0.8)',
-                                'rgba(200, 50, 0, 0.8)',
-                                'rgba(255, 50, 50, 0.8)'
+                                window.categoryColors?.mineur?.chartBg,
+                                window.categoryColors?.moyen?.chartBg,
+                                window.categoryColors?.grave?.chartBg,
+                                window.categoryColors?.majeur?.chartBg
                             ],
                             borderColor: [
-                                'rgba(75, 192, 40, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(200, 50, 0, 1)',
-                                'rgba(255, 50, 50, 1)'
+                                window.categoryColors?.mineur?.border,
+                                window.categoryColors?.moyen?.border,
+                                window.categoryColors?.grave?.border,
+                                window.categoryColors?.majeur?.border
                             ],
                             borderWidth: 1,
                             hoverOffset: 15

@@ -11,7 +11,7 @@
     @stack('styles')
     @yield('styles')
     <style>
-        :root {
+    :root {
         --primary-color: #2a3b90;
         --secondary-color: #52ceff;
         --success-color: #28a745;
@@ -19,6 +19,14 @@
         --danger-color: #dc3545;
         --light-bg: #f8f9fa;
         --border-color: #dee2e6;
+        --category-mineur-bg: rgba(75, 192, 40, 0.9);
+        --category-mineur-border: rgba(75, 192, 40, 1);
+        --category-moyen-bg: rgba(255, 206, 86, 0.9);
+        --category-moyen-border: rgba(255, 206, 86, 1);
+        --category-grave-bg: rgba(200, 50, 0, 0.9);
+        --category-grave-border: rgba(200, 50, 0, 1);
+        --category-majeur-bg: rgba(255, 50, 50, 0.9);
+        --category-majeur-border: rgba(255, 50, 50, 1);
     }
         .btn-primary{
             background-color: var(--primary-color);
@@ -97,12 +105,13 @@
                     <div class="d-flex align-items-center gap-2">
                         <i class="fas fa-user-circle"></i>
                         <span>{{ auth()->user()->nom ?? 'Utilisateur' }}</span>
+                        <span class="badge bg-secondary">{{ auth()->user()->profil ?? 'Profil' }}</span>
                         @php
                             $currentSite = session('site');
                             $sites = ['ALG' => 'Alger', 'ORN' => 'Oran', 'CST' => 'Constantine', 'SBA' => 'Sidi Bel Abbès', 'ORG' => 'Ouargla', 'STF' => 'Sétif', 'MGM' => 'Mostaganem'];
                             $siteLabel = $sites[$currentSite] ?? $currentSite ?? 'Non défini';
                         @endphp
-                        @if(auth()->user()->profil === 'ADMIN' || auth()->user()->profil === 'superadmin')
+                        @if(auth()->user()->profil === 'ADMIN' || auth()->user()->profil === 'DG')
                             <form action="{{ route('site.set') }}" method="POST" class="d-inline">
                                 @csrf
                                 <select name="site" class="navbar-site-select" onchange="this.form.submit()" style="width: auto; display: inline-block; cursor: pointer;">
@@ -165,7 +174,7 @@
                             </a>
                         </li>
                         {{-- Dans resources/views/layouts/app.blade.php, dans la section sidebar --}}
-                        @if(in_array(auth()->user()->profil, ['ladmin', 'superadmin', 'DG']) || true)
+                        @if(in_array(auth()->user()->profil, ['ladmin', 'ADMIN', 'DG']))
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('users.index') }}">
                                 <i class="fas fa-users-cog me-2"></i>Utilisateurs
@@ -177,7 +186,7 @@
                                 <i class="fas fa-exclamation-triangle me-2"></i>Excès
                             </a>
                         </li-->
-                        @if(in_array(auth()->user()->profil, ['DG', 'managerR', 'ADMIN', 'superadmin']) ||
+                        @if(in_array(auth()->user()->profil, ['DG', 'managerR', 'ADMIN', 'ladmin']) ||
                             in_array(auth()->user()->matricule, ['310040', '310020']))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="statistiquesDropdown" role="button"
@@ -205,11 +214,14 @@
                             </ul>
                         </li>
                         @endif
+                        @if (in_array(auth()->user()->profil, ['DG', 'managerR', 'ADMIN', 'ladmin']) ||
+                            in_array(auth()->user()->matricule, ['310040', '310020']))
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('journal') }}">
                                 <i class="fas fa-book me-2"></i>Journal
                             </a>
                         </li>
+                        @endif
                     </ul>
                 </div>
             </nav>

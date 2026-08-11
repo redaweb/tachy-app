@@ -25,6 +25,7 @@
                         <th>Code</th>
                         <th>Statut</th>
                         <th>Enveloppe</th>
+                        <th>Commentaires</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -62,6 +63,14 @@
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
+                            </td>
+                            <td>
+                                @if($course->commentaire)
+                                    <span class="text-muted">{{ $course->commentaire }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
                             <td>
                                 <a href="{{ route('courses.show', $course->idcourse) }}" target="_blank" class="btn btn-sm btn-primary" title="Voir les détails">
                                     <i class="fas fa-eye"></i>
