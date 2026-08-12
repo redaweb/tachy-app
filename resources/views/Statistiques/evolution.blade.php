@@ -294,32 +294,32 @@ function evolutionExces() {
                     {
                         label: 'Mineur',
                         data: labels.map(label => mineurByDate[label]),
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor:window.categoryColors?.mineur?.border || 'rgba(75, 192, 192, 1)',
+                        backgroundColor: window.categoryColors?.mineur?.chartBg || 'rgba(75, 192, 192, 0.2)',
                         fill: false,
                         tension: 0.1
                     },
                     {
                         label: 'Moyen',
                         data: labels.map(label => moyenByDate[label]),
-                        borderColor: 'rgba(255, 206, 86, 1)',
-                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        borderColor: window.categoryColors?.moyen?.border || 'rgba(255, 206, 86, 1)',
+                        backgroundColor: window.categoryColors?.moyen?.chartBg || 'rgba(255, 206, 86, 0.2)',
                         fill: false,
                         tension: 0.1
                     },
                     {
                         label: 'Grave',
                         data: labels.map(label => graveByDate[label]),
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: window.categoryColors?.grave?.border || 'rgba(255, 99, 132, 1)',
+                        backgroundColor: window.categoryColors?.grave?.chartBg || 'rgba(255, 99, 132, 0.2)',
                         fill: false,
                         tension: 0.1
                     },
                     {
                         label: 'Majeur',
                         data: labels.map(label => majeurByDate[label]),
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: window.categoryColors?.majeur?.border || 'rgba(153, 102, 255, 1)',
+                        backgroundColor: window.categoryColors?.majeur?.chartBg || 'rgba(153, 102, 255, 0.2)',
                         fill: false,
                         tension: 0.1
                     }
