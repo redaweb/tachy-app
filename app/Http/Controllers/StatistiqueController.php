@@ -257,6 +257,37 @@ class StatistiqueController extends Controller
     // Export CSV
     public function exportCSV(Request $request)
     {
+        $request->validate(['debut' => ['nullable', 'date_format:d/m/Y'], 'fin' => ['nullable', 'date_format:d/m/Y']]);
+
+        $categories = array_filter(explode(',', (string) $request->query('categories')));
+        $voies = array_filter(explode(',', (string) $request->query('voies')));
+        $conducteurs = array_filter(explode(',', (string) $request->query('conducteurs')));
+        $matricules = array_map(fn ($conducteur) => preg_split('/\s+/', trim($conducteur), 2)[0], $conducteurs);
+
+        $courses = Course::with(['conducteur', 'enveloppe', 'exces' => function ($query) use ($categories) {
+                if ($categories) $query->whereIn('categorie', $categories);
+            }])
+            ->where('site', session('site', 'ALG'))->where('valide', true)
+            ->when($request->filled(['debut', 'fin']), function ($query) use ($request) {
+                $query->whereBetween('ladate', [Carbon::createFromFormat('d/m/Y', $request->debut)->startOfDay(), Carbon::createFromFormat('d/m/Y', $request->fin)->endOfDay()]);
+            })
+            ->when($matricules, fn ($query) => $query->whereIn('matricule', $matricules))
+            ->when($voies, fn ($query) => $query->whereHas('enveloppe', fn ($q) => $q->whereIn('voie', $voies)))
+            ->orderBy('code')->get();
+
+        return response()->streamDownload(function () use ($courses) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Code', 'Rame', 'SV', 'SA', 'Date', 'Heure', 'Matricule', 'Conducteur', 'Voie', 'Nombre FU', 'Nombre patin', 'Nombre gong', 'Nombre klaxon', 'Categorie', 'Aire', 'Max', 'Autorise', 'Distance', 'Interstation', 'Details'], ';');
+            foreach ($courses as $course) {
+                $base = [$course->code !== null ? str_pad($course->code, 4, '0', STR_PAD_LEFT) : '', $course->RAME, $course->SV, $course->SA, optional($course->ladate)->format('d/m/Y'), $course->heure, $course->matricule, trim(($course->conducteur->nom ?? '') . ' ' . ($course->conducteur->prenom ?? '')), $course->enveloppe->voie ?? '', $course->FU, $course->patin, $course->gong, $course->klaxon];
+                $exces = $course->exces->sortBy('idexce');
+                if ($exces->isEmpty()) { fputcsv($handle, array_merge($base, array_fill(0, 7, '')), ';'); continue; }
+                foreach ($exces as $exce) fputcsv($handle, array_merge($base, [$exce->categorie, $exce->aire, $exce->maxx, $exce->autorise, $exce->fin - $exce->debut, $exce->interstation, $exce->detail]), ';');
+            }
+            fclose($handle);
+        }, 'exces_' . now()->format('Y-m-d_His') . '.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+
         // Implémentez l'export CSV ici
         // ...
     }

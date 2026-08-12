@@ -549,6 +549,12 @@
                             <td>{{ $item['detail'] ?? '' }}</td>
                             <td>
                                 <span style="font-weight: 700; font-size: 10px; text-transform: uppercase;">
+                                    @switch($item['categorie'] ?? 'mineur')
+                                        @case('moyen') <i class="fas fa-exclamation-circle severity-icon me-1"></i> @break
+                                        @case('grave') <i class="fas fa-exclamation-triangle severity-icon me-1"></i> @break
+                                        @case('majeur') <i class="fas fa-skull-crossbones severity-icon me-1"></i> @break
+                                        @default <i class="fas fa-info-circle severity-icon me-1"></i>
+                                    @endswitch
                                     {{ ucfirst($item['categorie'] ?? 'mineur') }}
                                 </span>
                             </td>

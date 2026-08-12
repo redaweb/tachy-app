@@ -196,7 +196,26 @@
                                 <td>{{ Str::limit($exces->interstation ?? 'N/A', 20) }}</td>
                                 <td class="text-danger">{{ $exces->maxx ?? 0 }} km/h</td>
                                 <td>{{ $exces->autorise ?? 0 }} km/h</td>
-                                <td><span class="badge bg-primary">{{ $exces->categorie ?? 'N/A' }}</span></td>
+                                <td>
+                                    @php
+                                        $categorie = $exces->categorie ?? 'mineur';
+                                        $badgeClass = match ($categorie) {
+                                            'moyen' => 'bg-warning text-dark',
+                                            'grave' => 'bg-danger',
+                                            'majeur' => 'bg-dark',
+                                            default => 'bg-info',
+                                        };
+                                        $iconClass = match ($categorie) {
+                                            'moyen' => 'fa-exclamation-circle',
+                                            'grave' => 'fa-exclamation-triangle',
+                                            'majeur' => 'fa-skull-crossbones',
+                                            default => 'fa-info-circle',
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">
+                                        <i class="fas {{ $iconClass }} severity-icon me-1"></i>{{ ucfirst($categorie) }}
+                                    </span>
+                                </td>
                                 <td>{{ $exces->course->conducteur->prenom ?? '' }} {{ $exces->course->conducteur->nom ?? 'N/A' }}</td>
                             </tr>
                             @empty

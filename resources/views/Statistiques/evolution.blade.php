@@ -91,7 +91,13 @@
                                                 'badge-moyen': exce.categorie === 'moyen',
                                                 'badge-grave': exce.categorie === 'grave',
                                                 'badge-majeur': exce.categorie === 'majeur'
-                                            }" x-text="exce.categorie.charAt(0).toUpperCase() + exce.categorie.slice(1)"></span>
+                                            }">
+                                                <i class="fas fa-info-circle severity-icon me-1" x-show="exce.categorie === 'mineur'"></i>
+                                                <i class="fas fa-exclamation-circle severity-icon me-1" x-show="exce.categorie === 'moyen'"></i>
+                                                <i class="fas fa-exclamation-triangle severity-icon me-1" x-show="exce.categorie === 'grave'"></i>
+                                                <i class="fas fa-skull-crossbones severity-icon me-1" x-show="exce.categorie === 'majeur'"></i>
+                                                <span x-text="exce.categorie.charAt(0).toUpperCase() + exce.categorie.slice(1)"></span>
+                                            </span>
                                         </td>
                                         <td x-text="exce.matricule"></td>
                                         <td x-text="exce.RAME"></td>

@@ -89,6 +89,10 @@
             background-color: #343a40;
             color: #fff;
         }
+        .severity-icon {
+            width: 1rem;
+            text-align: center;
+        }
     </style>
 
 </head>
@@ -186,7 +190,7 @@
                                 <i class="fas fa-exclamation-triangle me-2"></i>Excès
                             </a>
                         </li-->
-                        @if(in_array(auth()->user()->profil, ['DG', 'managerR', 'ADMIN', 'ladmin']) ||
+                        @if(in_array(auth()->user()->profil, ['DG', 'managerR', 'ADMIN', 'ladmin','user']) ||
                             in_array(auth()->user()->matricule, ['310040', '310020']))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="statistiquesDropdown" role="button"

@@ -80,19 +80,19 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td><span class="badge badge-mineur">Mineur</span></td>
+                                        <td><span class="badge badge-mineur"><i class="fas fa-info-circle severity-icon me-1"></i>Mineur</span></td>
                                         <td class="text-end" x-text="currentMonthStats.mineur"></td>
                                     </tr>
                                     <tr>
-                                        <td><span class="badge badge-moyen">Moyen</span></td>
+                                        <td><span class="badge badge-moyen"><i class="fas fa-exclamation-circle severity-icon me-1"></i>Moyen</span></td>
                                         <td class="text-end" x-text="currentMonthStats.moyen"></td>
                                     </tr>
                                     <tr>
-                                        <td><span class="badge badge-grave">Grave</span></td>
+                                        <td><span class="badge badge-grave"><i class="fas fa-exclamation-triangle severity-icon me-1"></i>Grave</span></td>
                                         <td class="text-end" x-text="currentMonthStats.grave"></td>
                                     </tr>
                                     <tr>
-                                        <td><span class="badge badge-majeur">Majeur</span></td>
+                                        <td><span class="badge badge-majeur"><i class="fas fa-skull-crossbones severity-icon me-1"></i>Majeur</span></td>
                                         <td class="text-end" x-text="currentMonthStats.majeur"></td>
                                     </tr>
                                     <tr class="table-secondary">

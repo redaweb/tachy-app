@@ -41,22 +41,22 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="badge badge-mineur">Excès mineur</span></td>
+                                <td><span class="badge badge-mineur"><i class="fas fa-info-circle severity-icon me-1"></i>Mineur</span></td>
                                 <td class="text-end fw-bold" x-text="nbmineur"></td>
                                 <td class="text-end" x-text="`${pcmineur}%`"></td>
                             </tr>
                             <tr>
-                                <td><span class="badge badge-moyen">Excès moyen</span></td>
+                                <td><span class="badge badge-moyen"><i class="fas fa-exclamation-circle severity-icon me-1"></i>Moyen</span></td>
                                 <td class="text-end fw-bold" x-text="nbmoyen"></td>
                                 <td class="text-end" x-text="`${pcmoyen}%`"></td>
                             </tr>
                             <tr>
-                                <td><span class="badge badge-grave">Excès grave</span></td>
+                                <td><span class="badge badge-grave"><i class="fas fa-exclamation-triangle severity-icon me-1"></i>Grave</span></td>
                                 <td class="text-end fw-bold" x-text="nbgrave"></td>
                                 <td class="text-end" x-text="`${pcgrave}%`"></td>
                             </tr>
                             <tr>
-                                <td><span class="badge badge-majeur">Excès majeur</span></td>
+                                <td><span class="badge badge-majeur"><i class="fas fa-skull-crossbones severity-icon me-1"></i>Majeur</span></td>
                                 <td class="text-end fw-bold" x-text="nbmajeur"></td>
                                 <td class="text-end" x-text="`${pcmajeur}%`"></td>
                             </tr>

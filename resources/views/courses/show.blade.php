@@ -397,7 +397,7 @@
                 <div class="stat-grid">
                     <div class="stat-item">
                         <span class="stat-label">
-                            <i class="fas fa-circle text-info"></i>Mineurs
+                            <i class="fas fa-info-circle severity-icon text-info me-1"></i>Mineur
                         </span>
                         <span class="stat-value">
                             <span class="excess-badge badge-mineur">{{ $nbmineur ?? 0 }}</span>
@@ -405,7 +405,7 @@
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">
-                            <i class="fas fa-circle text-warning"></i>Moyens
+                            <i class="fas fa-exclamation-circle severity-icon text-warning me-1"></i>Moyen
                         </span>
                         <span class="stat-value">
                             <span class="excess-badge badge-moyen">{{ $nbmoyen ?? 0 }}</span>
@@ -413,7 +413,7 @@
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">
-                            <i class="fas fa-circle text-orange"></i>Graves
+                            <i class="fas fa-exclamation-triangle severity-icon text-orange me-1"></i>Grave
                         </span>
                         <span class="stat-value">
                             <span class="excess-badge badge-grave">{{ $nbgrave ?? 0 }}</span>
@@ -421,7 +421,7 @@
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">
-                            <i class="fas fa-circle text-danger"></i>Majeurs
+                            <i class="fas fa-skull-crossbones severity-icon text-danger me-1"></i>Majeur
                         </span>
                         <span class="stat-value">
                             <span class="excess-badge badge-majeur">{{ $nbmajeur ?? 0 }}</span>
@@ -563,7 +563,18 @@
                                             elseif($ex['categorie'] == 'grave') $badgeClass = 'badge-grave';
                                             elseif($ex['categorie'] == 'majeur') $badgeClass = 'badge-majeur';
                                         @endphp
-                                        <span class="excess-badge {{ $badgeClass }}">{{ ucfirst($ex['categorie']) }}</span>
+                                        <span class="excess-badge {{ $badgeClass }}">
+                                            @if($ex['categorie'] === 'moyen')
+                                                <i class="fas fa-exclamation-circle severity-icon me-1"></i>
+                                            @elseif($ex['categorie'] === 'grave')
+                                                <i class="fas fa-exclamation-triangle severity-icon me-1"></i>
+                                            @elseif($ex['categorie'] === 'majeur')
+                                                <i class="fas fa-skull-crossbones severity-icon me-1"></i>
+                                            @else
+                                                <i class="fas fa-info-circle severity-icon me-1"></i>
+                                            @endif
+                                            {{ ucfirst($ex['categorie']) }}
+                                        </span>
                                     </td>
                                     <td>
                                         <span class="text-danger fw-bold">{{ $ex['max'] }} km/h</span>

@@ -107,7 +107,7 @@
                    @change="$store.statistiques.appliquerFiltres()"
                    id="cat-mineur">
             <label class="form-check-label small" for="cat-mineur">
-                <span class="badge badge-mineur px-2 py-1">Excès mineur</span>
+                <span class="badge badge-mineur px-2 py-1"><i class="fas fa-info-circle severity-icon me-1"></i>Mineur</span>
             </label>
         </div>
         <div class="form-check">
@@ -116,7 +116,7 @@
                    @change="$store.statistiques.appliquerFiltres()"
                    id="cat-moyen">
             <label class="form-check-label small" for="cat-moyen">
-                <span class="badge badge-moyen px-2 py-1">Excès moyen</span>
+                <span class="badge badge-moyen px-2 py-1"><i class="fas fa-exclamation-circle severity-icon me-1"></i>Moyen</span>
             </label>
         </div>
         <div class="form-check">
@@ -125,7 +125,7 @@
                    @change="$store.statistiques.appliquerFiltres()"
                    id="cat-grave">
             <label class="form-check-label small" for="cat-grave">
-                <span class="badge badge-grave px-2 py-1">Excès grave</span>
+                <span class="badge badge-grave px-2 py-1"><i class="fas fa-exclamation-triangle severity-icon me-1"></i>Grave</span>
             </label>
         </div>
         <div class="form-check">
@@ -134,7 +134,7 @@
                    @change="$store.statistiques.appliquerFiltres()"
                    id="cat-majeur">
             <label class="form-check-label small" for="cat-majeur">
-                <span class="badge badge-majeur px-2 py-1">Excès majeur</span>
+                <span class="badge badge-majeur px-2 py-1"><i class="fas fa-skull-crossbones severity-icon me-1"></i>Majeur</span>
             </label>
         </div>
     </div>
