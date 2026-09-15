@@ -99,7 +99,7 @@
 <body>
     @auth
     <!-- Navbar Top -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-top">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-top" style="background-color: var(--secondary-color); border-bottom-color:var(--warning-color)">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ route('dashboard') }}">
                 <i class="fas fa-tachometer-alt me-2"></i>Dorcas
