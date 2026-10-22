@@ -1172,6 +1172,7 @@ class CourseController extends Controller
         //dd($data);
         $conducteurs = Conducteur::where('site', $course->site)->get();
         $data['conducteurs'] = $conducteurs;
+        $data['conducteurSelectionne'] = $conducteurs->firstWhere('matricule', $course->matricule);
         return view('courses.show', $data);
     }
 

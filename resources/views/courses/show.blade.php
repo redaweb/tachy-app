@@ -240,6 +240,103 @@
         border: none;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+
+    .course-registration-dialog.ui-dialog {
+        max-width: calc(100vw - 24px);
+        padding: 0;
+        border: 0;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(14, 27, 68, 0.28);
+    }
+
+    .course-registration-dialog .ui-dialog-titlebar {
+        padding: 18px 22px;
+        border: 0;
+        border-radius: 0;
+        background: linear-gradient(135deg, var(--primary-color), #4058b5);
+        color: #fff;
+    }
+
+    .course-registration-dialog .ui-dialog-title { font-size: 1.05rem; font-weight: 700; }
+
+    .course-registration-dialog .ui-dialog-titlebar-close {
+        top: 50%; right: 14px; transform: translateY(-50%);
+        border: 0; background: rgba(255, 255, 255, 0.16);
+    }
+
+    .course-registration-dialog .ui-dialog-content { padding: 22px; background: #f7f8fc; }
+
+    #dialog-form { display: none; }
+
+    #dialog-form > span {
+        display: inline-block;
+        color: #354477 !important;
+        vertical-align: middle;
+    }
+
+    #dialog-form #nbcontrole {
+        margin: 0 7px 16px 0;
+        padding: 5px 11px;
+        border: 1px solid #dce4ff;
+        border-radius: 20px;
+        background: #eef2ff;
+        color: var(--primary-color) !important;
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    #dialog-form > span:last-of-type { margin-bottom: 16px; }
+
+    #dialog-form form {
+        margin-bottom: 15px;
+        padding: 18px;
+        border: 1px solid #e4e8f0;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 3px 12px rgba(31, 45, 83, 0.04);
+    }
+
+    #dialog-form form:last-child { margin-bottom: 0; }
+    #dialog-form .form-label { margin-bottom: 6px; color: #404b63; font-size: .9rem; font-weight: 600; }
+
+    #dialog-form .form-control {
+        min-height: 44px;
+        border-color: #d9deea;
+        border-radius: 9px;
+    }
+
+    #dialog-form .form-control:focus {
+        border-color: #7185d1;
+        box-shadow: 0 0 0 3px rgba(42, 59, 144, .12);
+    }
+
+    #dialog-form input[type="submit"] {
+        min-height: 42px;
+        padding: 8px 18px;
+        border: 0;
+        border-radius: 9px;
+        background: var(--primary-color);
+        color: #fff;
+        font-weight: 600;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    #dialog-form input[type="submit"]:hover { background: #4058b5; transform: translateY(-1px); }
+
+    .course-registration-dialog .ui-dialog-buttonpane {
+        margin: 0;
+        padding: 10px 20px;
+        border: 0;
+        background: #fff;
+    }
+
+    .course-registration-dialog .ui-dialog-buttonpane button { border-radius: 8px; }
+
+    @media (max-width: 575.98px) {
+        .course-registration-dialog .ui-dialog-content { padding: 14px; }
+        #dialog-form form { padding: 14px; }
+    }
 </style>
 @endsection
 
@@ -308,7 +405,7 @@
             <div class="mb-3">
                 <label for="matricule" class="form-label">Matricule :</label>
                 <input autocomplete="off" list="cdrs" type="text" id="matricule" name="matricule"
-                       placeholder="EX: 310xxx" value="{{$course->matricule}}" class="form-control" required
+                       placeholder="EX: 310xxx" value="{{ $conducteurSelectionne ? $conducteurSelectionne->matricule . ' ' . $conducteurSelectionne->nom . ' ' . $conducteurSelectionne->prenom : $course->matricule }}" class="form-control" required
                        oninput="nbcontrol($('#matricule').val().substr(0,6))"
                        onchange="nbcontrol($('#matricule').val().substr(0,6))">
                 <datalist id="cdrs">
@@ -810,9 +907,13 @@
         // Configuration de la dialog d'enregistrement
         $("#dialog-form").dialog({
             autoOpen: false,
-            height: 600,
-            width: 500,
+            height: "auto",
+            maxHeight: Math.round(window.innerHeight * 0.88),
+            width: 560,
             modal: true,
+            resizable: false,
+            dialogClass: "course-registration-dialog",
+            position: { my: "center", at: "center", of: window },
             buttons: {
                 "Fermer": function() {
                     $(this).dialog("close");

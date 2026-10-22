@@ -90,14 +90,14 @@ class EnveloppeController extends Controller
 
         // Statistiques
         $stats = [
-            'total' => Enveloppe::count(),
-            'archivees' => Enveloppe::where('figer', true)->count(),
-            'actives' => Enveloppe::where('figer', false)->count(),
-            'voies' => Enveloppe::distinct('voie')->count('voie'),
+            'total' => Enveloppe::where('site', $site)->count(),
+            'archivees' => Enveloppe::where('figer', true)->where('site', $site)->count(),
+            'actives' => Enveloppe::where('figer', false)->where('site', $site)->count(),
+            'voies' => Enveloppe::distinct('voie')->where('site', $site)->count('voie'),
         ];
 
         // Liste des voies pour le filtre
-        $voies = Enveloppe::distinct()->pluck('voie');
+        $voies = Enveloppe::where('site', $site)->distinct()->pluck('voie');
 
         return view('enveloppes.index', compact('enveloppes', 'stats', 'voies', 'envBloque', 'user'));
     }
@@ -108,7 +108,9 @@ class EnveloppeController extends Controller
     public function search(Request $request)
     {
         $term = $request->get('q');
-        $enveloppes = Enveloppe::where('nom', 'like', '%' . $term . '%')
+        $site = Session::get('site');
+        $enveloppes = Enveloppe::where('site', $site)
+                    ->where('nom', 'like', '%' . $term . '%')
                     ->orWhere('lieudebut', 'like', '%' . $term . '%')
                     ->orWhere('lieufin', 'like', '%' . $term . '%')
                     ->limit(10)
