@@ -261,7 +261,7 @@ function repartitionConducteurs() {
                 },
                 options: {
                     responsive: true,
-                    //maintainAspectRatio: false,
+                    maintainAspectRatio: false,
                     scales: {
                         x: {
                             stacked: true

@@ -211,7 +211,10 @@
             init() {
                 this.updateChart = debounce(this.majChart.bind(this), 200);
 
-                // Appel initial
+                // Créer le graphique immédiatement, même avant le chargement des données.
+                this.initChart();
+
+                // Premier affichage avec les valeurs disponibles (zéro au démarrage).
                 this.updateChart();
 
                 // Écouter les changements de filtres
@@ -297,18 +300,9 @@
             majChart() {
                 console.log('majchart called');
 
-                if (this.totalfreinages === 0) {
-                    if (this.chart) {
-                        this.chart.destroy();
-                        this.chart = null;
-                    }
-                    return;
-                }
-
                 if (!this.chart || !Chart.getChart(this.chart.canvas)) {
                     console.warn('Chart instance no longer valid → recreating');
                     this.initChart();
-                    return;
                 }
 
                 try {

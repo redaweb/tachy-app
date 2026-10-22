@@ -147,6 +147,9 @@ function evolutionfreinages() {
         init() {
             this.loading = true;
 
+            // Afficher immédiatement le graphique, même sans données chargées.
+            this.initCharts();
+
             // Écouteurs d'événements
             window.addEventListener('StatFreinages-donnees-chargees', () => this.handleDataLoaded());
             window.addEventListener('StatFreinages-filtres-appliques', () => this.handleDataLoaded());
@@ -234,7 +237,7 @@ function evolutionfreinages() {
                         y: { beginAtZero: true, title: { display: true, text: "Nombre de freinages" } }
                     },
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: true, position: 'top' }
                     }
                 }
             });

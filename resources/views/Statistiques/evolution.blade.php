@@ -155,6 +155,9 @@ function evolutionExces() {
         init() {
             this.loading = true;
 
+            // Afficher immédiatement le graphique, même sans données chargées.
+            this.initCharts();
+
             // Écouteurs d'événements
             window.addEventListener('statistiques-donnees-chargees', () => this.handleDataLoaded());
             window.addEventListener('statistiques-filtres-appliques', () => this.handleDataLoaded());
@@ -243,7 +246,7 @@ function evolutionExces() {
                         y: { beginAtZero: true, title: { display: true, text: "Nombre d'excès" } }
                     },
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: true, position: 'top' }
                     }
                 }
             });
