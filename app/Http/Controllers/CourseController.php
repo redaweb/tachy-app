@@ -472,14 +472,14 @@ class CourseController extends Controller
                             ->get()
                             ->map(function($course) {
                                 return [
-                                    'id' => $course->id,
+                                    'id' => $course->idcourse,
                                     'ladate' => $course->ladate->format('d/m/Y'),
                                     'heure' => $course->heure,
                                     'matricule' => $course->matricule,
                                     'fichier' => $course->fichier,
                                     'code' => $course->code,
                                     'valide' => $course->valide,
-                                    'url' => route('courses.show', $course->id)
+                                    'url' => route('courses.show', $course->idcourse)
                                 ];
                             });
 

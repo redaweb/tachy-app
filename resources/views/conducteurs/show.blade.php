@@ -55,6 +55,7 @@
                                 <th>FU</th>
                                 <th>Klaxon</th>
                                 <th>Statut</th>
+                                <th>ouvrir</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -71,6 +72,11 @@
                                     @else
                                         <span class="badge bg-warning">En attente</span>
                                     @endif
+                                </td>
+                                <td>
+                                    <a href="{{ route('courses.show', $course->idcourse) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
                                 </td>
                             </tr>
                             @endforeach

@@ -10,7 +10,7 @@ class ConducteurController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Conducteur::query()->withCount('courses');
+        $query = Conducteur::query()->where('site', session('site'))->withCount('courses');
 
         // Recherche par matricule, nom ou prénom
         if ($request->has('search') && !empty($request->search)) {
@@ -101,7 +101,11 @@ class ConducteurController extends Controller
 
     public function show($matricule)
     {
-        $conducteur = Conducteur::with(['courses.enveloppe', 'courses.exces'])
+        $conducteur = Conducteur::with([
+                                   'courses' => fn ($query) => $query->orderByDesc('ladate')->orderByDesc('heure'),
+                                   'courses.enveloppe',
+                                   'courses.exces',
+                               ])
                                ->findOrFail($matricule);
 
         return view('conducteurs.show', compact('conducteur'));

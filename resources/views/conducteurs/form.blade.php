@@ -46,9 +46,20 @@
 
             <div class="mb-3">
                 <label for="site" class="form-label">Site</label>
-                <input type="text" class="form-control @error('site') is-invalid @enderror" 
-                       id="site" name="site" 
-                       value="{{ old('site', $conducteur->site ?? '') }}">
+                <select class="form-select @error('site') is-invalid @enderror"
+                                id="site" name="site">
+                            <option value="">Sélectionnez un site</option>
+                            @php
+                                $sites = ['ALG' => 'Alger', 'ORN' => 'Oran', 'CST' => 'Constantine',
+                                         'SBA' => 'Sidi Bel Abbès', 'ORG' => 'Ouargla',
+                                         'STF' => 'Sétif', 'MGM' => 'Mostaganem'];
+                            @endphp
+                            @foreach($sites as $code => $label)
+                                <option value="{{ $code }}" {{ old('site', $conducteur->site ?? '') == $code ? 'selected' : '' }}>
+                                    {{ $label }} ({{ $code }})
+                                </option>
+                            @endforeach
+                        </select>
                 @error('site')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
