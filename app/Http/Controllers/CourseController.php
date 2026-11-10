@@ -295,11 +295,12 @@ class CourseController extends Controller
         }
 
         // Insérer dans coursecsv
+        $rows = [];
         foreach ($courses as $courseData) {
             $datetime = $courseData['temps'];
             $datetime_mysql = Carbon::createFromFormat('d/m/Y H:i:s', $datetime)->format('Y-m-d H:i:s');
 
-            CourseCsv::create([
+            $rows[] = [
                 'km' => $courseData['km'],
                 'temps' => $datetime_mysql,
                 'vitesse' => $courseData['vitesse'],
@@ -313,7 +314,10 @@ class CourseController extends Controller
                 'patin' => $courseData['patin'],
                 'klaxon' => $courseData['klaxon'],
                 'idcourse' => $courseData['idcourse']
-            ]);
+            ];
+        }
+        foreach (array_chunk($rows, 500) as $chunk) {
+            CourseCsv::insert($chunk);
         }
 
     return redirect()->route('courses.index')->with('success', 'Le fichier a été importé avec succès');
@@ -660,7 +664,7 @@ class CourseController extends Controller
     private function buildCourseViewData(Course $course, $idenveloppe = null)
     {
         $lannee = Carbon::parse($course->ladate)->format('Y');
-        $site = Session::get('site', $course->site ?? 'ALG');
+        $site = $course->site ?: Session::get('site', 'ALG');
 
         // Charger les enveloppes pour le site
 
@@ -702,7 +706,7 @@ class CourseController extends Controller
 
             ini_set('memory_limit', '1024M');
 
-            if (($handle = fopen($lenregistrement, "r")) !== FALSE) {
+            if (($handle = fopen_csv($lenregistrement, "r")) !== FALSE) {
                 $ln = 1;
                 while (($data = fgetcsv($handle, 1024, ";")) !== FALSE) {
                     if ($ln >= $getdebut && $ln <= $getfin) {
@@ -820,20 +824,17 @@ class CourseController extends Controller
         // Calcul des excès
         $nbexait = -1;
         $exait = [];
-        for ($i = 0; $i < count($pointcourses); $i++) {
-            $j = 0;
+        $envIndex = 0;
+        $envCount = count($nouveauEnv);
+        $pointCount = count($pointcourses);
+        for ($i = 0; $i < $pointCount; $i++) {
             $pointcourses[$i]['difference'] = 0;
 
             // Trouver vitesse limite
-            while ($j < count($nouveauEnv) && ($nouveauEnv[$j]["x"] ?? PHP_INT_MAX) <= $i) {
-                $j++;
+            while ($envIndex < $envCount && ($nouveauEnv[$envIndex]["x"] ?? PHP_INT_MAX) <= $i) {
+                $envIndex++;
             }
-
-            if ($j == 0) {
-                $j = 1;
-            }
-
-            $pointcourses[$i]['limite'] = $nouveauEnv[$j - 1]["y"] ?? 0; // limite
+            $pointcourses[$i]['limite'] = $nouveauEnv[max(0, $envIndex - 1)]["y"] ?? 0;
             $pointcourses[$i]['difference'] = (float) ($pointcourses[$i]['vitesse'] ?? 0) - (float) ($pointcourses[$i]['limite'] ?? 0);
 
             if ($pointcourses[$i]['difference'] < 1) {
@@ -886,6 +887,7 @@ class CourseController extends Controller
         $enveloppeModel = Enveloppe::find($quelenv);
 
         // Traitement des excès
+        $excesRows = [];
         foreach ($exait as $i => &$item) {
 
             // Récupérer la limite depuis les données de course
@@ -971,7 +973,7 @@ class CourseController extends Controller
             $item["dist"] = $item["fin"] - $item["debut"];
             // Insérer dans la base de données
             //dd($item);
-            if($item["passe"]) Exces::create([
+            if($item["passe"]) $excesRows[] = [
                 'idcourse' => $course->idcourse,
                 'aire' => round($item["aire"] ?? 0, 2),
                 'maxx' => round((float)str_replace(",", ".", $item["max"] ?? 0), 2),
@@ -981,10 +983,13 @@ class CourseController extends Controller
                 'debut' => $item["debut"] ?? 0,
                 'fin' => $item["fin"] ?? 0,
                 'detail' => $item["detail"] ?? "",
-            ]);
+            ];
 
             $item["dd"] = ($item["debut"] ?? 0) - 10;
             $item["ff"] = ($item["fin"] ?? 0) + 10;
+        }
+        foreach (array_chunk($excesRows, 500) as $chunk) {
+            Exces::insert($chunk);
         }
         $exait = array_filter($exait, function($item) {
             return $item["passe"] ?? false;
@@ -1042,18 +1047,22 @@ class CourseController extends Controller
         }
         Freinage::where('idcourse', $course->idcourse)->delete();
 
+        $freinageRows = [];
         foreach ($brake as $item) {
             $detail = is_string($item['detail'])
                 ? mb_convert_encoding($item['detail'], 'UTF-8', 'UTF-8')
                 : $item['detail'];
-            Freinage::create([
+            $freinageRows[] = [
                 'type' => $item['type'],
                 'vitesse' => $item['vitesse'],
                 'interstation' => $item['interstation'],
                 'details' => $detail,
                 'heure' => $item['heure'],
                 'idcourse' => $course->idcourse,
-            ]);
+            ];
+        }
+        foreach (array_chunk($freinageRows, 500) as $chunk) {
+            Freinage::insert($chunk);
         }
         // temps de parcours relevé
         $f=0;

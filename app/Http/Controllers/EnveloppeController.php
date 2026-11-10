@@ -83,7 +83,7 @@ class EnveloppeController extends Controller
             $query->orderBy($sortField, $sortDirection);
         }
             // Filtrer par site actuel
-            $site=Session::get('site');
+            $site = Session::get('site', 'ALG');
             $query->where('site', $site);
         // Pagination de 10 éléments par page
         $enveloppes = $query->paginate(10);

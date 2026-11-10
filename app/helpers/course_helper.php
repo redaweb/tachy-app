@@ -83,3 +83,18 @@ if (!function_exists('reEnv')) {
         return $enveloppe;
     }
 }
+
+if (!function_exists('fopen_csv')) {
+    function fopen_csv($path, $mode = "r")
+    {
+        if (file_exists($path)) {
+            return fopen($path, $mode);
+        }
+
+        if (file_exists($path . ".gz")) {
+            return fopen("compress.zlib://" . $path . ".gz", $mode);
+        }
+
+        return false;
+    }
+}

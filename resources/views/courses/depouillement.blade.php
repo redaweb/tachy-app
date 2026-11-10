@@ -434,7 +434,7 @@
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">Date</span>
-                    <span class="info-value">{{ $course->ladate ?? '--' }}</span>
+                    <span class="info-value">{{ $course->ladate ? \Carbon\Carbon::parse($course->ladate)->format('d/m/Y') : '--' }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Heure Début</span>
@@ -442,15 +442,15 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Lieu Début</span>
-                    <span class="info-value">{{ $course->lieudebut ?? '--' }}</span>
+                    <span class="info-value">{{ $enveloppeModel->lieudebut ?? '--' }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Lieu Fin</span>
-                    <span class="info-value">{{ $course->lieufin ?? '--' }}</span>
+                    <span class="info-value">{{ $enveloppeModel->lieufin ?? '--' }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Voie</span>
-                    <span class="info-value">{{ $course->voie ?? '--' }}</span>
+                    <span class="info-value">{{ $enveloppeModel->voie ?? '--' }}</span>
                 </div>
             </div>
         </div>
@@ -467,15 +467,15 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Service Agent (SA)</span>
-                    <span class="info-value">{{ $course->conducteur->SA ?? '--' }}</span>
+                    <span class="info-value">{{ $course->SA ?? $course->conducteur->SA ?? '--' }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Tramway N°</span>
-                    <span class="info-value">{{ $course->conducteur->RAME ?? '--' }}</span>
+                    <span class="info-value">{{ $course->RAME ?? $course->conducteur->RAME ?? '--' }}</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Service Véhicule (SV)</span>
-                    <span class="info-value">{{ $course->conducteur->SV ?? '--' }}</span>
+                    <span class="info-value">{{ $course->SV ?? $course->conducteur->SV ?? '--' }}</span>
                 </div>
             </div>
         </div>

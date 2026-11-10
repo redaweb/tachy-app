@@ -27,7 +27,7 @@ class EnveloppeHelper
                         'x' => (float)$data[1],
                         'y' => (float)$data[2],
                         'stp' => (int)$data[3],
-                        'label'=>$data[0]
+                        'label' => mb_convert_encoding($data[0] ?? '', 'UTF-8', 'auto')
                     ];
                 }
                 $ln++;
@@ -38,4 +38,3 @@ class EnveloppeHelper
         return $matrice;
     }
 }
-
