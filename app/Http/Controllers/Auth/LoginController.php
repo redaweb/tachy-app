@@ -129,6 +129,7 @@ class LoginController extends Controller
             Session::put('site', $userSite);
         }
         Session::put('profil', $user->profil);
+        Session::put('matricule', (string) $request->input($this->username()));
     }
 
     /**

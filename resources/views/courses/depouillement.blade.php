@@ -607,7 +607,7 @@
                 <div class="signature-grid">
                     <div class="signature-box">
                         <span class="signature-role">Agent de maîtrise (Contrôleur)</span>
-                        @if(true || in_array((string) session('matricule'), ['310040', '310275'], true))
+                        @if(in_array((string) auth()->id(), ['310040', '310275'], true))
                             <img src="{{ asset('images/boubaya4.png') }}" class="signature-img" alt="Signature Agent">
                         @endif
                     </div>
@@ -676,7 +676,7 @@
                 <div class="signature-grid">
                     <div class="signature-box">
                         <span class="signature-role">Agent de maîtrise (Contrôleur)</span>
-                        @if(true || in_array((string) session('matricule'), ['310040', '310275'], true))
+                        @if(in_array((string) auth()->id(), ['310040', '310275'], true))
                             <img src="{{ asset('images/boubaya4.png') }}" class="signature-img" alt="Signature Agent">
                         @endif
                     </div>
