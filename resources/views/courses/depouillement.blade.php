@@ -309,8 +309,8 @@
         .signature-section {
             border: 1px solid #cbd5e1;
             border-radius: 6px;
-            overflow: hidden;
-            margin-top: 8px;
+            overflow: visible;
+            margin-top: 2px;
             margin-bottom: 8px;
         }
 
@@ -332,7 +332,7 @@
 
         .signature-box {
             padding: 6px 12px;
-            height: 70px;
+            height: 90px;
             border-right: 1px solid #e2e8f0;
             position: relative;
             display: flex;
@@ -356,9 +356,12 @@
         }
 
         .signature-img {
-            max-height: 45px;
+            width: 400px;
+            height: 120px;
             object-fit: contain;
-            align-self: flex-end;
+            align-self: center;
+            margin-top: -30px;
+
         }
 
         /* -------- FOOTER -------- */
@@ -604,8 +607,8 @@
                 <div class="signature-grid">
                     <div class="signature-box">
                         <span class="signature-role">Agent de maîtrise (Contrôleur)</span>
-                        @if(isset($signatureImage))
-                            <img src="{{ asset($signatureImage) }}" class="signature-img" alt="Signature Agent">
+                        @if(true || in_array((string) session('matricule'), ['310040', '310275'], true))
+                            <img src="{{ asset('images/boubaya4.png') }}" class="signature-img" alt="Signature Agent">
                         @endif
                     </div>
                     <div class="signature-box">
@@ -673,8 +676,8 @@
                 <div class="signature-grid">
                     <div class="signature-box">
                         <span class="signature-role">Agent de maîtrise (Contrôleur)</span>
-                        @if(isset($signatureImage))
-                            <img src="{{ asset($signatureImage) }}" class="signature-img" alt="Signature Agent">
+                        @if(true || in_array((string) session('matricule'), ['310040', '310275'], true))
+                            <img src="{{ asset('images/boubaya4.png') }}" class="signature-img" alt="Signature Agent">
                         @endif
                     </div>
                     <div class="signature-box">
